@@ -4,6 +4,8 @@ import { DateTime } from "luxon"
 
 const REGION = "us-east-1"
 
+const headers = { "Content-Type": "application/json" }
+
 export const handler = async (event) => {
 	const s3 = new S3Client({ region: REGION })
 
@@ -19,6 +21,7 @@ export const handler = async (event) => {
 
 		return {
 			statusCode: 200,
+			headers: headers,
 			body: JSON.stringify({
 				url: signedUrl,
 			}),
@@ -27,6 +30,7 @@ export const handler = async (event) => {
 		console.log(err)
 		return {
 			statusCode: 500,
+			headers: headers,
 			body: JSON.stringify({
 				error: err,
 			}),
