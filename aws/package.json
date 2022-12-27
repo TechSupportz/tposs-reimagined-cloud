@@ -1,0 +1,17 @@
+{
+  "name": "aws",
+  "version": "1.0.0",
+  "description": "This is the code of the AWS infrastructure that will be used to host the TPOSS: Reimagined microservices system.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.238.0",
+    "@aws-sdk/s3-request-presigner": "^3.238.0",
+    "luxon": "^3.1.1"
+  }
+}
