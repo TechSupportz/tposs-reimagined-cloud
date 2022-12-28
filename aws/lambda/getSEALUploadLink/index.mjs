@@ -3,7 +3,6 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { DateTime } from "luxon"
 
 const REGION = "us-east-1"
-
 const headers = { "Content-Type": "application/json" }
 
 export const handler = async (event) => {
@@ -32,7 +31,7 @@ export const handler = async (event) => {
 			statusCode: 500,
 			headers: headers,
 			body: JSON.stringify({
-				error: err,
+				message: err,
 			}),
 		}
 	}

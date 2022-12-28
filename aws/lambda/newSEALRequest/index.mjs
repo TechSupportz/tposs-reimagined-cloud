@@ -2,9 +2,10 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb"
 import { nanoid } from "nanoid"
 
+const REGION = "us-east-1"
 const headers = { "Content-Type": "application/json" }
 
-const dynamodb = new DynamoDBClient({ region: "us-east-1" })
+const dynamodb = new DynamoDBClient({ region: REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodb)
 
 export const handler = async (event) => {
@@ -14,6 +15,7 @@ export const handler = async (event) => {
 		TableName: "SEALPoints",
 		Item: {
 			student_id: body.student_id,
+			staff_id: body.staff_id,
 			seal_id: nanoid(10),
 			name: body.name,
 			type: body.type,
@@ -43,7 +45,7 @@ export const handler = async (event) => {
 			statusCode: 500,
 			headers: headers,
 			body: JSON.stringify({
-				error: err,
+				message: err,
 			}),
 		}
 	}
@@ -52,21 +54,22 @@ export const handler = async (event) => {
 // This is just for local testing purposes
 // Ensure this is commented out when deploying to AWS
 
-// console.log("Running locally")
-// handler({
-// 	body: `{
-// 		"student_id": "2101234A",
-// 		"attachment_key": "TotallyLegitS3Key",
-// 		"award_details": "Consolation Prize, $20 capitaland vouchers per member",
-// 		"duration": ["2022-12-10", "2022-12-12"],
-// 		"involvement": "Participant",
-// 		"members": [
-// 			{
-// 				"admission_number": "2200000A",
-// 				"name": "Ben Dover"
-// 			}
-// 		],
-// 		"name": "Hack - The Hackathon",
-// 		"type": "Achievement"
-// 	}`,
-// })
+console.log("Running locally")
+handler({
+	body: `{
+		"student_id": "2101530J",
+		"staff_id": "FT12345A",
+		"attachment_key": "AnotherTotallyLegitS3Key",
+		"award_details": "Second Prize, $100 capitaland vouchers per member",
+		"duration": ["2022-12-10", "2022-12-12"],
+		"involvement": "Participant",
+		"members": [
+			{
+				"admission_number": "2200000A",
+				"name": "Mike Ross"
+			}
+		],
+		"name": "Hack - The Hackathon",
+		"type": "Achievement"
+	}`,
+})
