@@ -39,7 +39,6 @@ export const handler = async (event) => {
 		}
 	} catch (err) {
 		if (err.name === "ConditionalCheckFailedException") {
-            console.log("balls")
 			return {
 				statusCode: 400,
 				headers: headers,
