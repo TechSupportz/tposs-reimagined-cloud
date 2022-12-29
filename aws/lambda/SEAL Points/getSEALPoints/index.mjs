@@ -8,41 +8,29 @@ const dynamodb = new DynamoDBClient({ region: REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodb)
 
 export const handler = async (event) => {
-	const { studentId, type } = event.pathParameters
+	const studentId = event.pathParameters.studentId
 
 	console.log("studentId: " + studentId)
-	console.log("type: " + type)
-
-	if (
-		type !== "Service" &&
-		type !== "Enrichment" &&
-		type !== "Achievement" &&
-		type !== "Leadership"
-	) {
-		return {
-			statusCode: 400,
-			headers: headers,
-			body: JSON.stringify({
-				message: "Invalid SEAL type provided",
-			}),
-		}
-	}
 
 	const executeStatementCommand = new ExecuteStatementCommand({
-		Statement: `SELECT * FROM SEALPoints WHERE student_id = ? AND type = ?`,
-		Parameters: [studentId, type],
+		Statement: `SELECT * FROM SEALPoints WHERE student_id = ? AND points > 0`,
+		Parameters: [studentId],
 	})
 
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
-		console.log(data)
+		const totalPoints = await calculateTotalPoints(data.Items)
+
+		// console.log(data)
+		// console.log(totalPoints)
 
 		return {
 			statusCode: 200,
 			headers: headers,
 			body: JSON.stringify({
-				message: "Successfully retrieved SEAL records",
-				items: data.Items,
+				message: "Successfully retrieved total SEAL points",
+				student_id: studentId,
+				points: totalPoints,
 			}),
 		}
 	} catch (err) {
@@ -57,6 +45,20 @@ export const handler = async (event) => {
 	}
 }
 
+const calculateTotalPoints = async (data) => {
+	let totalPoints = 0
+
+	if (data.length === 0) {
+		return totalPoints
+	}
+
+	data.forEach((item) => {
+		totalPoints += item.points
+	})
+
+	return totalPoints
+}
+
 /* 
 cSpell:disable 
 This is just for local testing purposes
@@ -66,7 +68,6 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2101220J",
-// 		type: "Leadership",
+// 		studentId: "2201234A",
 // 	},
 // })
