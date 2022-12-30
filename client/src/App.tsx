@@ -61,6 +61,9 @@ const App = () => {
 		<>
 			<h1>TPOSS: Reimagined</h1>
 			<h2>JWT Tokens</h2>
+			<a href="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout?client_id=4iermftj0fjo513022qtg0n464&redirect_uri=https://main.d3cvr0pboc0tkg.amplifyapp.com/&response_type=code">
+				<button>Logout</button>
+			</a>
 
 			<div className="token">
 				<h3>ID Token (JWT for authorization)</h3>
