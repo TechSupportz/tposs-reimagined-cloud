@@ -51,25 +51,28 @@ export const handler = async (event) => {
 	}
 }
 
-// This is just for local testing purposes
-// Ensure this is commented out when deploying to AWS
+/* 
+cSpell:disable 
+This is just for local testing purposes
+Ensure this is commented out when deploying to AWS
+*/
 
-console.log("Running locally")
-handler({
-	body: `{
-		"student_id": "2101530J",
-		"staff_id": "FT12345A",
-		"attachment_key": "AnotherTotallyLegitS3Key",
-		"award_details": "Second Prize, $100 capitaland vouchers per member",
-		"duration": ["2022-12-10", "2022-12-12"],
-		"involvement": "Participant",
-		"members": [
-			{
-				"admission_number": "2200000A",
-				"name": "Mike Ross"
-			}
-		],
-		"name": "Hack - The Hackathon",
-		"type": "Achievement"
-	}`,
-})
+// console.log("Running locally")
+// handler({
+// 	body: `{
+// 		"student_id": "2101530J",
+// 		"staff_id": "FT12345A",
+// 		"attachment_key": "AnotherTotallyLegitS3Key",
+// 		"award_details": "Second Prize, $100 capitaland vouchers per member",
+// 		"duration": ["2022-12-10", "2022-12-12"],
+// 		"involvement": "Participant",
+// 		"members": [
+// 			{
+// 				"admission_number": "2200000A",
+// 				"name": "Mike Ross"
+// 			}
+// 		],
+// 		"name": "Hack - The Hackathon",
+// 		"type": "Achievement"
+// 	}`,
+// })
