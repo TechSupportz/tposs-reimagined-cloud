@@ -120,6 +120,5 @@ Ensure this is commented out when deploying to AWS
 //    "contact_number":"+6591234568",
 //    "mc_number":"2874790",
 //    "clinic":"The Other Doctor",
-//    "approved":false
 // }`,
 // })
