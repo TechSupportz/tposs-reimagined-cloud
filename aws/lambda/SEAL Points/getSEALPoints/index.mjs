@@ -66,7 +66,7 @@ const filterSEALRecords = async (data, studentId) => {
 	let filteredData = []
 
 	data.forEach((item) => {
-		if (item.members === undefined) {
+		if (item.student_id === studentId || item.members === undefined) {
 			filteredData.push(item)
 		} else {
 			item.members.forEach((member) => {
@@ -89,6 +89,6 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2201234A",
+// 		studentId: "2200000A",
 // 	},
 // })
