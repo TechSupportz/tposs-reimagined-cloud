@@ -13,43 +13,34 @@ export const handler = async (event) => {
 	console.log("studentId: " + studentId)
 	console.log("type: " + type)
 
-	if (
-		type !== "Service" &&
-		type !== "Enrichment" &&
-		type !== "Achievement" &&
-		type !== "Leadership"
-	) {
+	if (type !== "MC" && type !== "LOA") {
 		return {
 			statusCode: 400,
 			headers: headers,
 			body: JSON.stringify({
-				message: "Invalid SEAL type provided",
+				message: "Invalid Leave type provided. Please enter MC or LOA",
 			}),
 		}
 	}
 
 	const executeStatementCommand = new ExecuteStatementCommand({
-		Statement: `SELECT * FROM SEALPoints WHERE (student_id = ? OR members IS NOT MISSING) AND type = ? AND points > 0`,
+		Statement: `SELECT * FROM Leave WHERE student_id = ? AND type = ?`,
 		Parameters: [studentId, type],
 	})
 
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
-		const filteredData = await filterSEALRecords(data.Items, studentId)
-
-		// console.log(data.Items)
-		// console.log(filteredData)
+        console.log(data.Items)
 
 		return {
 			statusCode: 200,
 			headers: headers,
 			body: JSON.stringify({
-				message: "Successfully retrieved SEAL records",
-				items: filteredData,
+				message: "Successfully retrieved Leave records",
+				items: data.Items,
 			}),
 		}
 	} catch (err) {
-		console.log(err)
 		return {
 			statusCode: 500,
 			headers: headers,
@@ -58,25 +49,6 @@ export const handler = async (event) => {
 			}),
 		}
 	}
-}
-
-// Filter out records where the student isn't listed in the members array
-const filterSEALRecords = async (data, studentId) => {
-	let filteredData = []
-
-	data.forEach((item) => {
-		if (item.student_id === studentId || item.members === undefined) {
-			filteredData.push(item)
-		} else {
-			item.members.forEach((member) => {
-				if (member.admission_number === studentId) {
-					filteredData.push(item)
-				}
-			})
-		}
-	})
-
-	return filteredData
 }
 
 /* 
@@ -88,7 +60,7 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2200000A",
-// 		type: "Achievement",
+// 		studentId: "2101234A",
+// 		type: "LOA",
 // 	},
 // })
