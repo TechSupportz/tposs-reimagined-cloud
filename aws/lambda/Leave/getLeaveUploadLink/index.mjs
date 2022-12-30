@@ -11,7 +11,7 @@ export const handler = async (event) => {
 	try {
 		const studentId = event.pathParameters.studentId
 		const putObjectCommand = new PutObjectCommand({
-			Bucket: "seal-points-bucket",
+			Bucket: "leave-bucket",
 			Key: `${studentId}-${DateTime.now().toMillis()}.pdf`,
 			ContentType: "application/pdf",
 		})
