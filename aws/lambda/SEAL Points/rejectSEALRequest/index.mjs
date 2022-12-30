@@ -1,11 +1,14 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
 import { DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb"
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2"
 
 const REGION = "us-east-1"
 const headers = { "Content-Type": "application/json" }
 
 const dynamodb = new DynamoDBClient({ region: REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodb)
+
+const ses = new SESv2Client({ region: REGION })
 
 export const handler = async (event) => {
 	const body = JSON.parse(event.body)
@@ -25,6 +28,11 @@ export const handler = async (event) => {
 
 	try {
 		const data = await ddbDocClient.send(deleteCommand)
+		await sendEmailNotification(
+			data.Attributes.student_id,
+			data.Attributes.name,
+			data.Attributes.type
+		)
 
 		return {
 			statusCode: 200,
@@ -57,16 +65,44 @@ export const handler = async (event) => {
 	}
 }
 
+const sendEmailNotification = async (studentId, name, type) => {
+	const sendEmailCommand = new SendEmailCommand({
+		FromEmailAddress: "2101530J+TPOSS-Reimagined@student.tp.edu.sg",
+		Destination: {
+			ToAddresses: ["2101530J+TPOSS-Reimagined@student.tp.edu.sg"],
+		},
+		Content: {
+			Simple: {
+				Subject: {
+					Data: `${studentId} - SEAL Point Request Rejected`,
+				},
+				Body: {
+					Text: {
+						Data: `Your ${type} request for ${name} has been rejected.`,
+					},
+				},
+			},
+		},
+	})
+
+	try {
+		const data = await ses.send(sendEmailCommand)
+		console.log("Email sent successfully. Message ID: ", data.MessageId)
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 /* 
 cSpell:disable 
 This is just for local testing purposes
 Ensure this is commented out when deploying to AWS
 */
 
-// console.log("Running locally")
-// handler({
-// 	body: `{
-//   "seal_id": "Ea7lYiuzN5",
-//   "student_id": "2201234A"
-// }`,
-// })
+console.log("Running locally")
+handler({
+	body: `{
+  "seal_id": "xIt6z21eR0",
+  "student_id": "2201234A"
+}`,
+})
