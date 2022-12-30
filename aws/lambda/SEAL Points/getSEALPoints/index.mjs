@@ -13,15 +13,17 @@ export const handler = async (event) => {
 	console.log("studentId: " + studentId)
 
 	const executeStatementCommand = new ExecuteStatementCommand({
-		Statement: `SELECT * FROM SEALPoints WHERE student_id = ? AND points > 0`,
+		Statement: `SELECT * FROM SEALPoints WHERE (student_id = ? OR members IS NOT MISSING) AND points > 0`,
 		Parameters: [studentId],
 	})
 
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
-		const totalPoints = await calculateTotalPoints(data.Items)
+		const filteredData = await filterSEALRecords(data.Items, studentId)
+		const totalPoints = await calculateTotalPoints(filteredData)
 
-		// console.log(data)
+		// console.log(data.Items.length)
+		// console.log(filteredData.length)
 		// console.log(totalPoints)
 
 		return {
@@ -57,6 +59,25 @@ const calculateTotalPoints = async (data) => {
 	})
 
 	return totalPoints
+}
+
+// Filter out records where the student isn't listed in the members array
+const filterSEALRecords = async (data, studentId) => {
+	let filteredData = []
+
+	data.forEach((item) => {
+		if (item.members === undefined) {
+			filteredData.push(item)
+		} else {
+			item.members.forEach((member) => {
+				if (member.admission_number === studentId) {
+					filteredData.push(item)
+				}
+			})
+		}
+	})
+
+	return filteredData
 }
 
 /* 

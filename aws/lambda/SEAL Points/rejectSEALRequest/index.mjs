@@ -99,10 +99,10 @@ This is just for local testing purposes
 Ensure this is commented out when deploying to AWS
 */
 
-console.log("Running locally")
-handler({
-	body: `{
-  "seal_id": "xIt6z21eR0",
-  "student_id": "2201234A"
-}`,
-})
+// console.log("Running locally")
+// handler({
+// 	body: `{
+//   "seal_id": "xIt6z21eR0",
+//   "student_id": "2201234A"
+// }`,
+// })
