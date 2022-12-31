@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
-import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb"
+import { DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb"
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2"
 
 const REGION = "us-east-1"
@@ -13,23 +13,21 @@ const ses = new SESv2Client({ region: REGION })
 export const handler = async (event) => {
 	const body = JSON.parse(event.body)
 
-	const updateCommand = new UpdateCommand({
+	const deleteCommand = new DeleteCommand({
 		TableName: "Leave",
 		Key: {
 			student_id: body.student_id,
 			leave_id: body.leave_id,
 		},
 		ConditionExpression: `approved = :false`,
-		UpdateExpression: `SET approved = :true`,
 		ExpressionAttributeValues: {
-			":true": true,
 			":false": false,
 		},
-		ReturnValues: "ALL_NEW",
+		ReturnValues: "ALL_OLD",
 	})
 
 	try {
-		const data = await ddbDocClient.send(updateCommand)
+		const data = await ddbDocClient.send(deleteCommand)
 		await sendEmailNotification(
 			data.Attributes.student_id,
 			data.Attributes.reason,
@@ -41,7 +39,7 @@ export const handler = async (event) => {
 			statusCode: 200,
 			headers: headers,
 			body: JSON.stringify({
-				message: `Approved ${data.Attributes.type} request`,
+				message: `Rejected ${data.Attributes.type} request`,
 				student_id: data.Attributes.student_id,
 				leave_id: data.Attributes.leave_id,
 				duration: data.Attributes.duration,
@@ -77,11 +75,11 @@ const sendEmailNotification = async (studentId, reason, type, duration) => {
 		Content: {
 			Simple: {
 				Subject: {
-					Data: `${studentId} - ${type} Request Approved`,
+					Data: `${studentId} - ${type} Request Rejected`,
 				},
 				Body: {
 					Text: {
-						Data: `Your ${type} request for ${reason} from ${duration[0]} to ${duration[1]} has been approved.`,
+						Data: `Your ${type} request for ${reason} from ${duration[0]} to ${duration[1]} has been rejected.`,
 					},
 				},
 			},
@@ -96,13 +94,16 @@ const sendEmailNotification = async (studentId, reason, type, duration) => {
 	}
 }
 
-// This is just for local testing purposes
-// Ensure this is commented out when deploying to AWS
+/* 
+cSpell:disable 
+This is just for local testing purposes
+Ensure this is commented out when deploying to AWS
+*/
 
 // console.log("Running locally")
 // handler({
 // 	body: `{
-//         "student_id": "2101530J",
-//   "leave_id": "L3TLOysik6"
+//   "leave_id": "F_uCVpfLTk",
+//   "student_id": "2101234B"
 // }`,
 // })

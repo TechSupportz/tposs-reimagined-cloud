@@ -44,6 +44,7 @@ export const handler = async (event) => {
 				message: "Approved SEAL request",
 				student_id: data.Attributes.student_id,
 				seal_id: data.Attributes.seal_id,
+				name: data.Attributes.name,
 				points: data.Attributes.points,
 			}),
 		}
