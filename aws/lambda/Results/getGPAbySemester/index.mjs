@@ -11,12 +11,12 @@ export const handler = async (event) => {
 	const studentId = event.pathParameters.studentId
 	const semester = parseSemester(event.pathParameters.semester)
 
-	if (typeof semester !== "number") {
+    if (typeof semester !== "number") {
 		return semester
 	}
 
 	console.log("studentId: " + studentId)
-	console.log("semester: " + semester)
+    console.log("semester: " + semester)
 
 	const executeStatementCommand = new ExecuteStatementCommand({
 		Statement: `SELECT * FROM Results WHERE student_id = ? AND semester = ?`,
@@ -26,7 +26,7 @@ export const handler = async (event) => {
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
 
-		if (data.Items.length === 0) {
+        if (data.Items.length === 0) {
 			return {
 				statusCode: 404,
 				headers: headers,
@@ -38,15 +38,19 @@ export const handler = async (event) => {
 			}
 		}
 
+		const cgpa = await calculateCGPA(data.Items[0])
+		console.log(cgpa)
+
 		return {
 			statusCode: 200,
 			headers: headers,
 			body: JSON.stringify({
-				message: "Successfully retrieved Results",
-				items: data.Items[0],
+				message: "Successfully retrieved cgpa",
+				cgpa: cgpa,
 			}),
 		}
 	} catch (err) {
+		console.log(err)
 		return {
 			statusCode: 500,
 			headers: headers,
@@ -89,6 +93,46 @@ export const parseSemester = (semester) => {
 	}
 }
 
+const calculateCGPA = async (semester) => {
+	let gradePoint = 0
+	let totalCredits = 0
+
+	
+		semester.results.forEach((subject) => {
+			if (subject.grade === "PASS" || subject.grade === "FAIL") return
+			gradePoint += parseGrade(subject.grade) * subject.credit_units
+			totalCredits += subject.credit_units
+		})
+	
+
+	return gradePoint / totalCredits
+}
+
+const parseGrade = (grade) => {
+	switch (grade) {
+		case "Z":
+			return 4
+		case "A":
+			return 4
+		case "B+":
+			return 3.5
+		case "B":
+			return 3
+		case "C+":
+			return 2.5
+		case "C":
+			return 2
+		case "D+":
+			return 1.5
+		case "D":
+			return 1
+		case "P":
+			return 1
+		case "F":
+			return 0
+	}
+}
+
 /* 
 cSpell:disable 
 This is just for local testing purposes
@@ -98,7 +142,7 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2101530J",
-// 		semester: "1.1",
+// 		studentId:"2101530J",
+//         semester: "1.2",
 // 	},
 // })
