@@ -1,5 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb"
+import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2"
 import { nanoid } from "nanoid"
 
 const REGION = "us-east-1"
@@ -11,6 +12,8 @@ const marshallOptions = {
 
 const dynamodb = new DynamoDBClient({ region: REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodb, { marshallOptions })
+
+const ses = new SESv2Client({ region: REGION })
 
 export const handler = async (event) => {
 	const body = JSON.parse(event.body)
@@ -57,6 +60,12 @@ export const handler = async (event) => {
 
 	try {
 		await ddbDocClient.send(putCommand)
+		await sendEmailNotification(
+			putCommand.input.Item.student_id,
+			putCommand.input.Item.reason,
+			putCommand.input.Item.type,
+			putCommand.input.Item.duration
+		)
 		return {
 			statusCode: 200,
 			headers: headers,
@@ -75,6 +84,34 @@ export const handler = async (event) => {
 				message: err,
 			}),
 		}
+	}
+}
+
+const sendEmailNotification = async (studentId, reason, type, duration) => {
+	const sendEmailCommand = new SendEmailCommand({
+		FromEmailAddress: "2101530J+TPOSS-Reimagined@student.tp.edu.sg",
+		Destination: {
+			ToAddresses: ["2101530J+TPOSS-Reimagined@student.tp.edu.sg"],
+		},
+		Content: {
+			Simple: {
+				Subject: {
+					Data: `${studentId} - ${type} Request sent successfully`,
+				},
+				Body: {
+					Text: {
+						Data: `Your ${type} request for ${reason} from ${duration[0]} to ${duration[1]} has been submitted successfully`,
+					},
+				},
+			},
+		},
+	})
+
+	try {
+		const data = await ses.send(sendEmailCommand)
+		console.log("Email sent successfully. Message ID: ", data.MessageId)
+	} catch (err) {
+		console.log(err)
 	}
 }
 
