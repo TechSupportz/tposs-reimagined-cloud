@@ -10,16 +10,19 @@ import {
 } from "@mantine/core"
 
 import React from "react"
+import Nav from "./components/Nav"
 
 const App = () => {
     return (
-        <Center h="100vh">
-            <Stack align="center">
-                <Title>Title - Raleway</Title>
-                <Text>Hello - Lato</Text>
-                <Button>Button!</Button>
-            </Stack>
-        </Center>
+        <AppShell navbar={<Nav type="student" />}>
+            <Center h="100%">
+                <Stack align="center">
+                    <Title>Title - Raleway</Title>
+                    <Text>Hello - Lato</Text>
+                    <Button>Button!</Button>
+                </Stack>
+            </Center>
+        </AppShell>
     )
 }
 
