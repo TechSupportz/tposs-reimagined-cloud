@@ -1,4 +1,4 @@
-import { UnstyledButton, Title, Group, Flex } from "@mantine/core"
+import { UnstyledButton, Title, Group, Flex, MediaQuery } from "@mantine/core"
 import Icon from "react-material-symbols/rounded"
 import React, { ReactNode } from "react"
 import { SymbolCodepoints } from "react-material-symbols/dist/types"
@@ -18,11 +18,16 @@ const NavButton = (props: NavButtonProps) => {
             w="100%"
             h={64}
             onClick={props.onClick}
-            sx={(theme) => ({
+            sx={theme => ({
                 borderRadius: theme.radius.lg,
-                backgroundColor: props.selected ? theme.colors.brand[0] : "transparent",
+                backgroundColor: props.selected
+                    ? theme.colors.brand[0]
+                    : "transparent",
                 "&:hover": {
                     backgroundColor: theme.colors.brand[0],
+                },
+                "&:active": {
+                    backgroundColor: "#ffccd6",
                 },
             })}>
             <Flex p="sm" align="center" gap="md">
@@ -30,9 +35,18 @@ const NavButton = (props: NavButtonProps) => {
                     color="#ef5c6e"
                     icon={props.icon}
                     weight={500}
-                    size={28}
+                    size={24}
                 />
-                <Title w="min" size="1em">
+
+                <Title
+                    w="min"
+                    sx={theme => ({
+                        fontSize: "1em",
+
+                        [theme.fn.smallerThan("lg")]: {
+                            fontSize: "0.85em",
+                        },
+                    })}>
                     {props.text}
                 </Title>
             </Flex>

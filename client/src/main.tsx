@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client"
 import App from "./App"
 import "./index.css"
 import { MantineProvider } from "@mantine/core"
+import { BrowserRouter } from "react-router-dom"
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <MantineProvider
@@ -28,6 +29,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             primaryColor: "brand",
             primaryShade: 3,
         }}>
-        <App />
+        <BrowserRouter>
+            <App />
+        </BrowserRouter>
     </MantineProvider>,
 )
