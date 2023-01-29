@@ -1,9 +1,11 @@
-import React from 'react'
+import React from "react"
+import useAppStore from "../../app/Store"
+import { Text } from "@mantine/core"
 
 const HomeStaff = () => {
-  return (
-	<div>HomeStaff</div>
-  )
+    const user = useAppStore(state => state.userInfo)
+
+    return <Text>Hello {user?.name}</Text>
 }
 
 export default HomeStaff

@@ -5,6 +5,7 @@ import TPLogo from "../assets/TP-Logo.png"
 import useAppStore from "../app/Store"
 import { UserRole } from "../types/UserRole"
 import NavButton from "./NavButton"
+import Redirect from "../pages/Redirect"
 
 interface NavProps {
     type: UserRole
@@ -74,6 +75,13 @@ const Nav = (props: NavProps) => {
     const isNavbarOpen = useAppStore(state => state.isNavbarOpen)
     const toggleNavbar = useAppStore(state => state.toggleNavbar)
 
+    const clearUser = useAppStore(state => state.clearUser)
+
+    const logoutUser = async () => {
+        navigate("/logout")
+        clearUser()
+    }
+
     return (
         <Navbar
             p="xs"
@@ -123,15 +131,7 @@ const Nav = (props: NavProps) => {
                 </Stack>
             </Navbar.Section>
             <Navbar.Section py="xs">
-                <NavButton
-                    text="Logout"
-                    icon="logout"
-                    onClick={() =>
-                        window.location.replace(
-                            "https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout",
-                        )
-                    }
-                />
+                <NavButton text="Logout" icon="logout" onClick={logoutUser} />
             </Navbar.Section>
         </Navbar>
     )
