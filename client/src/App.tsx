@@ -1,8 +1,9 @@
 import { AppShell, Text } from "@mantine/core"
 
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes, useLocation } from "react-router-dom"
 import AppBar from "./components/AppBar"
 import Nav from "./components/Nav"
+import Authenticate from "./pages/Authenticate"
 import Forbidden from "./pages/Forbidden"
 import NotFound from "./pages/NotFound"
 import HomeStaff from "./pages/Staff/HomeStaff"
@@ -20,11 +21,12 @@ import { UserRole } from "./types/UserRole"
 
 const App = () => {
     const role: UserRole = "student"
+    const location = useLocation()
 
     return (
-        <AppShell navbar={<Nav type={role} />} header={<AppBar />}>
+        <AppShell hidden={location.pathname === "/"} navbar={<Nav type={role} />} header={<AppBar />}>
             <Routes>
-                <Route path="/" element={<HomeStudent />} />
+                <Route path="/" element={<Authenticate />} />
                 <Route path="/staff" element={<StaffRoute role={role} />}>
                     <Route path="home" element={<HomeStaff />} />
                     <Route path="leave" element={<LeaveStaff />} />

@@ -29,8 +29,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             primaryColor: "brand",
             primaryShade: 3,
         }}>
-        <BrowserRouter>
-            <App />
-        </BrowserRouter>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
     </MantineProvider>,
 )

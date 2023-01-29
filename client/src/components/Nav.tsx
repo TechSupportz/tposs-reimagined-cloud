@@ -1,8 +1,8 @@
 import { Center, Image, Navbar, Stack } from "@mantine/core"
 import { SymbolCodepoints } from "react-material-symbols/dist/types"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import TPLogo from "../assets/TP-Logo.png"
-import useAppStore from "../Hooks/Store"
+import useAppStore from "../app/Store"
 import { UserRole } from "../types/UserRole"
 import NavButton from "./NavButton"
 
@@ -18,6 +18,7 @@ interface NavItem {
 
 const Nav = (props: NavProps) => {
     const navigate = useNavigate()
+    const location = useLocation()
 
     const studentNavItems: NavItem[] = [
         {
@@ -70,14 +71,15 @@ const Nav = (props: NavProps) => {
         },
     ]
 
-    const isOpen = useAppStore(state => state.isOpen)
+    const isNavbarOpen = useAppStore(state => state.isNavbarOpen)
+    const toggleNavbar = useAppStore(state => state.toggleNavbar)
 
     return (
         <Navbar
             p="xs"
             hiddenBreakpoint="md"
             width={{ md: 216, lg: 256 }}
-            hidden={!isOpen}>
+            hidden={!isNavbarOpen}>
             <Navbar.Section>
                 <Center p={{ base: 0, md: "sm" }} pb={{ base: 0, md: "md" }}>
                     <Image
@@ -95,7 +97,13 @@ const Nav = (props: NavProps) => {
                                   key={index}
                                   text={item.name}
                                   icon={item.icon}
-                                  onClick={() => navigate(item.link)}
+                                  onClick={() => {
+                                      navigate(item.link)
+                                      setTimeout(() => {
+                                          toggleNavbar()
+                                      }, 200)
+                                  }}
+                                  selected={location.pathname === item.link}
                               />
                           ))
                         : staffNavItems.map((item, index) => (
@@ -103,7 +111,13 @@ const Nav = (props: NavProps) => {
                                   key={index}
                                   text={item.name}
                                   icon={item.icon}
-                                  onClick={() => navigate(item.link)}
+                                  onClick={() => {
+                                      navigate(item.link)
+                                      setTimeout(() => {
+                                          toggleNavbar()
+                                      }, 200)
+                                  }}
+                                  selected={location.pathname === item.link}
                               />
                           ))}
                 </Stack>
