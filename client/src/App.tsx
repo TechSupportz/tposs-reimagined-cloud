@@ -26,17 +26,26 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<HomeStudent />} />
                 <Route path="/staff" element={<StaffRoute role={role} />}>
-                    <Route path="home" element={<HomeStaff />} />
-                    <Route path="leave" element={<LeaveStaff />} />
-                    <Route path="seal" element={<SealStaff />} />
+                    <Route path="/staff/home" element={<HomeStaff />} />
+                    <Route path="/staff/leave" element={<LeaveStaff />} />
+                    <Route path="/staff/seal" element={<SealStaff />} />
                 </Route>
                 <Route path="/student" element={<StudentRoute role={role} />}>
-                    <Route path="home" element={<HomeStudent />} />
-                    <Route path="results" element={<ResultsStudent />} />
-                    <Route path="leave" element={<LeaveStudent />} />
-                    <Route path="seal" element={<SealStudent />} />
-                    <Route path="subject" element={<SubjectStudent />} />
-                    <Route path="calculator" element={<CalculatorStudent />} />
+                    <Route path="/student/home" element={<HomeStudent />} />
+                    <Route
+                        path="/student/results"
+                        element={<ResultsStudent />}
+                    />
+                    <Route path="/student/leave" element={<LeaveStudent />} />
+                    <Route path="/student/seal" element={<SealStudent />} />
+                    <Route
+                        path="/student/subject"
+                        element={<SubjectStudent />}
+                    />
+                    <Route
+                        path="/student/calculator"
+                        element={<CalculatorStudent />}
+                    />
                 </Route>
                 <Route path="/forbidden" element={<Forbidden />} />
                 <Route path="*" element={<NotFound />} />
