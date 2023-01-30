@@ -1,5 +1,4 @@
 import { StateCreator } from "zustand"
-import { useSessionStorage } from "@mantine/hooks"
 import { UserRole } from "../../types/UserRole"
 
 export interface AuthTokens {
