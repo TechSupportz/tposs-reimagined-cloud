@@ -4,6 +4,7 @@ import App from "./App"
 import "./index.css"
 import { MantineProvider } from "@mantine/core"
 import { BrowserRouter } from "react-router-dom"
+import { PaperStylesParams } from "@mantine/core/lib/Paper"
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <MantineProvider
@@ -28,6 +29,18 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             },
             primaryColor: "brand",
             primaryShade: 3,
+            components: {
+                Paper: {
+                    styles: (theme, params: PaperStylesParams) => ({
+                        root: {
+                            boxShadow:
+                                params.shadow === "md"
+                                    ? "0px 4px 12px rgba(0, 0, 0, 0.1);"
+                                    : undefined,
+                        },
+                    }),
+                },
+            },
         }}>
         <BrowserRouter>
             <App />
