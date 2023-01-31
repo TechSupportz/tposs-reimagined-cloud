@@ -20,11 +20,11 @@ export const handler = async (event) => {
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
 		const filteredData = await filterSEALRecords(data.Items, studentId)
-		const totalPoints = await calculateTotalPoints(filteredData)
+		const points = await calculateTotalPoints(filteredData)
 
 		// console.log(data.Items.length)
 		// console.log(filteredData.length)
-		// console.log(totalPoints)
+		// console.log(points)
 
 		return {
 			statusCode: 200,
@@ -32,7 +32,8 @@ export const handler = async (event) => {
 			body: JSON.stringify({
 				message: "Successfully retrieved total SEAL points",
 				student_id: studentId,
-				points: totalPoints,
+				points: points.totalPoints,
+				grade: points.SEALGrade,
 			}),
 		}
 	} catch (err) {
@@ -49,16 +50,61 @@ export const handler = async (event) => {
 
 const calculateTotalPoints = async (data) => {
 	let totalPoints = 0
+	let servicePoints = 0
+	let enrichmentPoints = 0
+	let achievementPoints = 0
+	let leadershipPoints = 0
 
 	if (data.length === 0) {
-		return totalPoints
+		return { totalPoints, SEALGrade: "Did not participate" }
 	}
 
 	data.forEach((item) => {
 		totalPoints += item.points
+		switch (item.type) {
+			case "Service":
+				servicePoints += item.points
+				break
+			case "Enrichment":
+				enrichmentPoints += item.points
+				break
+			case "Achievement":
+				achievementPoints += item.points
+				break
+			case "Leadership":
+				leadershipPoints += item.points
+				break
+		}
 	})
 
-	return totalPoints
+	const SEALGrade = await determineSEALGrade(
+		[servicePoints, enrichmentPoints, achievementPoints, leadershipPoints],
+		totalPoints
+	)
+
+	return { totalPoints, SEALGrade }
+}
+
+const determineSEALGrade = async (pointsList, totalPoints) => {
+	if (totalPoints < 20) {
+		return "Participated"
+	} else if (totalPoints < 40) {
+		return "Good"
+	} else {
+		let hasPoints = 0
+
+		for (let i = 0; i < pointsList.length; i++) {
+			if (pointsList[i] > 0) {
+				hasPoints++
+			}
+		}
+
+		if (hasPoints >= 2) {
+			return "Excellent"
+		} else {
+			return "Very Good"
+		}
+	}
 }
 
 // Filter out records where the student isn't listed in the members array
@@ -89,6 +135,6 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2200000A",
+// 		studentId: "2100000A",
 // 	},
 // })
