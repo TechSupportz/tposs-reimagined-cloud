@@ -53,7 +53,7 @@ const Authenticate = () => {
                         client_id: "4iermftj0fjo513022qtg0n464",
                         redirect_uri: "http://localhost:3000/",
                     }),
-                    mode: "cors",
+                    // mode: "cors",
                 },
             )
             const data = (await res.json()) as AuthTokens

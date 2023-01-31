@@ -25,8 +25,12 @@ const StudentInfoCard = () => {
                         Course:
                     </Title>
                     <Text size={20}>
-						{user ? "course" in user! ? user?.course : "Something" : "Loading"}
-					</Text>
+                        {user
+                            ? "course" in user!
+                                ? user?.course
+                                : "Something"
+                            : "Loading"}
+                    </Text>
                 </Box>
             </Stack>
         </Paper>
