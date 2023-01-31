@@ -27,7 +27,9 @@ export const handler = async (event) => {
 			headers: headers,
 			body: JSON.stringify({
 				message: "Successfully retrieved cgpa",
-				cgpa: cgpa,
+				cgpa: cgpa.cgpa,
+				totalCredits: cgpa.totalCredits,
+				totalGradedCredits: cgpa.totalGradedCredits,
 			}),
 		}
 	} catch (err) {
@@ -44,17 +46,23 @@ export const handler = async (event) => {
 
 const calculateCGPA = async (allResults) => {
 	let gradePoint = 0
+	let totalGradedCredits = 0
 	let totalCredits = 0
 
 	for (const semester of allResults) {
 		semester.results.forEach((subject) => {
+			totalCredits += subject.credit_units
 			if (subject.grade === "PASS" || subject.grade === "FAIL") return
 			gradePoint += parseGrade(subject.grade) * subject.credit_units
-			totalCredits += subject.credit_units
+			totalGradedCredits += subject.credit_units
 		})
 	}
 
-	return gradePoint / totalCredits
+	return {
+		cgpa: gradePoint / totalGradedCredits,
+		totalCredits: totalCredits,
+		totalGradedCredits: totalGradedCredits,
+	}
 }
 
 const parseGrade = (grade) => {
