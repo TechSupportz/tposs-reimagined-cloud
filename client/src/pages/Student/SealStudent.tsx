@@ -1,6 +1,7 @@
 import { Grid, Paper } from "@mantine/core"
 import React from "react"
 import SEALInfoCard from "../../components/SEALInfoCard"
+import SEALTableCard from "../../components/SEALTableCard"
 import StudentInfoCard from "../../components/StudentInfoCard"
 
 const SealStudent = () => {
@@ -13,9 +14,7 @@ const SealStudent = () => {
                 <SEALInfoCard />
             </Grid.Col>
             <Grid.Col pb={0} sx={{ minHeight: "65%" }}>
-                <Paper shadow="md" h="100%" radius="lg">
-                    3
-                </Paper>
+                <SEALTableCard />
             </Grid.Col>
         </Grid>
     )

@@ -1,11 +1,20 @@
 import { Center, Image, Navbar, Stack } from "@mantine/core"
-import { SymbolCodepoints } from "react-material-symbols/dist/types"
 import { useLocation, useNavigate } from "react-router-dom"
 import TPLogo from "../assets/TP-Logo.png"
 import useAppStore from "../app/Store"
 import { UserRole } from "../types/UserRole"
 import NavButton from "./NavButton"
 import Redirect from "../pages/Redirect"
+import { StyledIcon } from "@styled-icons/styled-icon"
+import {
+    AutoStories,
+    Calculate,
+    EventBusy,
+    Home,
+    Inventory,
+    Logout,
+    WorkspacePremium,
+} from "@styled-icons/material-rounded"
 
 interface NavProps {
     type: UserRole
@@ -13,7 +22,7 @@ interface NavProps {
 
 interface NavItem {
     name: string
-    icon: SymbolCodepoints
+    icon: JSX.Element
     link: string
 }
 
@@ -24,32 +33,32 @@ const Nav = (props: NavProps) => {
     const studentNavItems: NavItem[] = [
         {
             name: "Home",
-            icon: "home",
+            icon: <Home size={28} color="#ef5c6e" />,
             link: "/student/home",
         },
         {
             name: "Exam Results & Grades",
-            icon: "inventory",
+            icon: <Inventory size={28} color="#ef5c6e" />,
             link: "/student/results",
         },
         {
             name: "LOA/MC Summary",
-            icon: "event_busy",
+            icon: <EventBusy size={28} color="#ef5c6e" />,
             link: "/student/leave",
         },
         {
             name: "SEAL Points",
-            icon: "workspace_premium",
+            icon: <WorkspacePremium size={28} color="#ef5c6e" />,
             link: "/student/seal",
         },
         {
             name: "Semester & Subjects",
-            icon: "auto_stories",
+            icon: <AutoStories size={28} color="#ef5c6e" />,
             link: "/student/subject",
         },
         {
             name: "GPA Calculator",
-            icon: "calculate",
+            icon: <Calculate size={28} color="#ef5c6e" />,
             link: "/student/calculator",
         },
     ]
@@ -57,17 +66,17 @@ const Nav = (props: NavProps) => {
     const staffNavItems: NavItem[] = [
         {
             name: "Home",
-            icon: "home",
+            icon: <Home size={28} color="#ef5c6e" />,
             link: "/staff/home",
         },
         {
             name: "LOA/MC Summary",
-            icon: "event_busy",
+            icon: <EventBusy size={28} color="#ef5c6e" />,
             link: "/staff/leave",
         },
         {
             name: "SEAL Points",
-            icon: "workspace_premium",
+            icon: <WorkspacePremium size={28} color="#ef5c6e" />,
             link: "/staff/seal",
         },
     ]
@@ -131,7 +140,11 @@ const Nav = (props: NavProps) => {
                 </Stack>
             </Navbar.Section>
             <Navbar.Section py="xs">
-                <NavButton text="Logout" icon="logout" onClick={logoutUser} />
+                <NavButton
+                    text="Logout"
+                    icon={<Logout size={28} color="#ef5c6e" />}
+                    onClick={logoutUser}
+                />
             </Navbar.Section>
         </Navbar>
     )

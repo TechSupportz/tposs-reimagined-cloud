@@ -14,7 +14,7 @@ const SEALInfoCard = () => {
     ]
 
     const { data, error, isLoading } = useSWR<SEALPoint, Error>(
-        uid,
+        user && tokens ? uid : null,
         ([url, token]) => fetcher(url, token),
     )
 

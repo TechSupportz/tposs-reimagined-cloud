@@ -48,7 +48,7 @@ export const handler = async (event) => {
 			body: JSON.stringify({
 				message: `Successfully retrieved ${type} records`,
 				items: filteredData,
-				points: points,
+				totalPoints: points,
 			}),
 		}
 	} catch (err) {

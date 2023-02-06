@@ -46,17 +46,17 @@ export const createAuthSlice: StateCreator<AuthSlice> = set => ({
     userInfo: null,
 
     setUser: (tokens: AuthTokens, user: StudentInfo | StaffInfo) => {
-        set(state => ({
+        set({
             tokens: tokens,
             userInfo: { ...user, username: user.username.toUpperCase() },
-        }))
+        })
         sessionStorage.setItem("tokens", JSON.stringify(tokens))
         sessionStorage.setItem("userInfo", JSON.stringify(user))
         console.table(tokens)
     },
 
     clearUser: () => {
-        set(state => ({
+        set({
             tokens: {
                 access_token: null,
                 expires_in: null,
@@ -65,7 +65,7 @@ export const createAuthSlice: StateCreator<AuthSlice> = set => ({
                 token_type: null,
             },
             userInfo: null,
-        }))
+        })
         sessionStorage.clear()
     },
 })

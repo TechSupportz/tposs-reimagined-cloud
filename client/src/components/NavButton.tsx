@@ -1,12 +1,19 @@
-import { UnstyledButton, Title, Group, Flex, MediaQuery } from "@mantine/core"
-import Icon from "react-material-symbols/rounded"
+import {
+    UnstyledButton,
+    Title,
+    Group,
+    Flex,
+    MediaQuery,
+    Box,
+} from "@mantine/core"
 import React, { ReactNode } from "react"
-import { SymbolCodepoints } from "react-material-symbols/dist/types"
 import { useHover } from "@mantine/hooks"
+import { Inventory } from "@styled-icons/material-rounded"
+import { StyledIcon } from "@styled-icons/styled-icon"
 
 interface NavButtonProps {
     text: string
-    icon: SymbolCodepoints
+    icon: JSX.Element
     onClick: () => void
     selected?: boolean
 }
@@ -30,13 +37,8 @@ const NavButton = (props: NavButtonProps) => {
                     backgroundColor: "#ffccd6",
                 },
             })}>
-            <Flex p="sm" align="center" gap="md">
-                <Icon
-                    color="#ef5c6e"
-                    icon={props.icon}
-                    weight={500}
-                    size={24}
-                />
+            <Flex w="100%" p="sm" align="center" gap="md">
+                {props.icon}
 
                 <Title
                     w="min"

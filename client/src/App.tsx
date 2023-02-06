@@ -16,6 +16,7 @@ import StaffRoute from "./pages/StaffRoute"
 import CalculatorStudent from "./pages/Student/CalculatorStudent"
 import HomeStudent from "./pages/Student/HomeStudent"
 import LeaveStudent from "./pages/Student/LeaveStudent"
+import NewSealStudent from "./pages/Student/NewSealStudent"
 import ResultsStudent from "./pages/Student/ResultsStudent"
 import SealStudent from "./pages/Student/SealStudent"
 import SubjectStudent from "./pages/Student/SubjectStudent"
@@ -42,7 +43,11 @@ const App = () => {
 
     return (
         <AppShell
-            hidden={location.pathname === "/" || location.pathname === "/login" || location.pathname === "/logout"}
+            hidden={
+                location.pathname === "/" ||
+                location.pathname === "/login" ||
+                location.pathname === "/logout"
+            }
             navbar={<Nav type={role} />}
             header={<AppBar />}>
             <Routes>
@@ -68,7 +73,8 @@ const App = () => {
                     <Route path="home" element={<HomeStudent />} />
                     <Route path="results" element={<ResultsStudent />} />
                     <Route path="leave" element={<LeaveStudent />} />
-                    <Route path="/student/seal" element={<SealStudent />} />
+                    <Route path="seal" element={<SealStudent />} />
+                    <Route path="seal/new" element={<NewSealStudent />} />
                     <Route path="subject" element={<SubjectStudent />} />
                     <Route path="calculator" element={<CalculatorStudent />} />
                 </Route>

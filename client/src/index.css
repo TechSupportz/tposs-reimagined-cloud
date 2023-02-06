@@ -10,3 +10,19 @@ body,
 #root {
     height: 100%;
 }
+
+
+
+th {
+    background-color: var(--mantine-color-brand-3);
+    color: white !important;
+    font-weight: 600 !important;
+    border-width: 3px !important;
+    border-color: var(--mantine-color-brand-5) !important;
+    font-family: "Raleway", sans-serif;
+}
+
+td {
+    border-width: 3px !important;
+    font-weight: 600;
+}
