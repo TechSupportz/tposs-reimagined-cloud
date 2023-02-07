@@ -65,6 +65,14 @@ export const theme: MantineThemeOverride = {
                 radius: "md",
                 variant: "filled",
             }),
+            styles: (theme, params: InputStylesParams) => ({
+                input: {
+                    borderWidth: 2,
+                    "&:focus": {
+                        borderColor: theme.colors.gray[4],
+                    },
+                },
+            }),
         },
         InputWrapper: {
             styles: (theme, params: InputStylesParams) => ({
@@ -74,6 +82,9 @@ export const theme: MantineThemeOverride = {
                     fontSize: 16,
                 },
                 required: {
+                    color: theme.colors.red[6],
+                },
+                error: {
                     color: theme.colors.red[6],
                 },
             }),

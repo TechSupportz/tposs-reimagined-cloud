@@ -8,6 +8,7 @@ import { PaperStylesParams } from "@mantine/core/lib/Paper"
 import { SWRConfig } from "swr"
 import { TabStylesNames } from "@mantine/core/lib/Tabs/Tab/Tab"
 import { theme } from "./Theme"
+import { NotificationsProvider } from "@mantine/notifications"
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <SWRConfig
@@ -21,9 +22,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             withNormalizeCSS
             withCSSVariables
             theme={theme}>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
+            <NotificationsProvider position="bottom-right">
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </NotificationsProvider>
         </MantineProvider>
     </SWRConfig>,
 )
