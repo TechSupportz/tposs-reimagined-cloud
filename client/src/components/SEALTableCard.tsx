@@ -33,12 +33,12 @@ const useStyles = createStyles(theme => ({
 const SEALTableCard = () => {
     const navigate = useNavigate()
 
-    const tokens = useAppStore(state => state.tokens)
-    const user = useAppStore(state => state.userInfo)
-
-    const selectedType = useAppStore(state => state.selectedType)
-    const setSelectedType = useAppStore(state => state.setSelectedType)
-
+    const tokens = useAppStore(state => state.tokens)    
+    const user = useAppStore(state => state.userInfo)    
+    
+    const selectedType = useAppStore(state => state.selectedType)    
+    const setSelectedType = useAppStore(state => state.setSelectedType)    
+    
     const { classes } = useStyles()
 
     const uid: Key = [

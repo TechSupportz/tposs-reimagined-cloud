@@ -12,14 +12,8 @@ import { theme } from "./Theme"
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <SWRConfig
         value={{
-            onError: err => {
-                console.error(err)
-
-                if (err.status === 401 && err.message === "Unauthorised") {
-                    console.log(
-                        "Hallo please implement ur refresh token logic here",
-                    )
-                }
+            onError: (error, key) => {
+                console.log(error)
             },
         }}>
         <MantineProvider

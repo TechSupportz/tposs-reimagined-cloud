@@ -3,6 +3,10 @@ import {
     PaperStylesParams,
     TabsStylesParams,
 } from "@mantine/core"
+import { InputStylesParams } from "@mantine/core/lib/Input"
+import { DateRangePickerProps } from "@mantine/dates/lib/components/DateRangePicker"
+import { CalendarMonth } from "@styled-icons/material-rounded"
+import { ReactNode } from "react"
 
 export const theme: MantineThemeOverride = {
     fontFamily: "Lato, sans-serif",
@@ -53,6 +57,42 @@ export const theme: MantineThemeOverride = {
                 },
                 tabsList: {
                     columnGap: 16,
+                },
+            }),
+        },
+        Input: {
+            defaultProps: theme => ({
+                radius: "md",
+                variant: "filled",
+            }),
+        },
+        InputWrapper: {
+            styles: (theme, params: InputStylesParams) => ({
+                label: {
+                    fontFamily: "Raleway, sans-serif",
+                    fontWeight: 600,
+                    fontSize: 16,
+                },
+                required: {
+                    color: theme.colors.red[6],
+                },
+            }),
+        },
+        Select: {
+            defaultProps: theme => ({
+                transition: "scale-y",
+                transitionDuration: 200,
+                transitionTimingFunction: "ease",
+            }),
+        },
+        DateRangePicker: {
+            defaultProps: theme => ({
+                transitionDuration: 200,
+                transitionTimingFunction: "ease",
+            }),
+            styles: (theme, params) => ({
+                weekdayCell: {
+                    backgroundColor: theme.white,
                 },
             }),
         },
