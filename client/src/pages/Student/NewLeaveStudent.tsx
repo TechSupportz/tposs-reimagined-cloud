@@ -28,20 +28,16 @@ import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
+import { LeaveType } from "../../types/Leave"
 
-interface SealRequestForm {
-    name: string
-    type: SEALType | null
+interface LOARequestForm {
+    contactNumber: string
+    reason: string
     duration: DateRangePickerValue | undefined
     document: File | null
-    involvement: string
-    awardDetails: string
-    groupMembers: string
-}
-
-interface GroupMember {
-    name: string
-    admission_number: string
+    gradedAssignment: "true" | "false" | boolean
+    subjectAffected: string | null
+    additionalInfo: string
 }
 
 interface S3UploadLink {
@@ -49,117 +45,132 @@ interface S3UploadLink {
     key: string
 }
 
-const NewSealStudent = (props: { isReadOnly: boolean }) => {
+const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
     const [isSubmitting, setIsSubmitting] = useState(props.isReadOnly)
-    const {id} = useParams()
+    const { type } = useParams() as { type: LeaveType }
 
     const navigate = useNavigate()
 
-    const form = useForm<SealRequestForm>({
+    const form = useForm<LOARequestForm>({
         initialValues: {
-            name: "",
-            type: null,
+            contactNumber: "",
+            reason: "",
             duration: undefined,
             document: null,
-            involvement: "",
-            awardDetails: "",
-            groupMembers: "",
+            gradedAssignment: "false",
+            subjectAffected: null,
+            additionalInfo: "",
         },
         validateInputOnBlur: !props.isReadOnly,
         validateInputOnChange: false,
         validate: {
-            name: isNotEmpty("Please enter the name of the event"),
-            type: isNotEmpty("Please select a type"),
+            contactNumber: matches(
+                /\+65(6|8|9)\d{7}/g,
+                "Please enter a valid Singapore contact number",
+            ),
+            reason: isNotEmpty("Please select a reason"),
             duration: isNotEmpty("Please select a duration"),
             document: isNotEmpty("Please upload a document"),
-            involvement: isNotEmpty("Please enter your involvement"),
-            groupMembers: matches(
-                /^(([a-zA-Z]+(([ ]+[a-zA-Z]+)?)+,[ ]*[0-9]{7}[a-zA-Z](\n|$))*|)$/,
-                "Please enter group members in the correct format",
-            ),
+            gradedAssignment: isNotEmpty("Please select an option"),
+            // subjectAffected: value => {
+            //     if (form.values.gradedAssignment && !value) {
+            //         return "Please select a subject"
+            //     }
+            //     return null
+            // },
+            // additionalInfo: value => {
+            //     if (form.values.reason === "Other") {
+            //         return isNotEmpty("Please specify your reason for LOA")(
+            //             value,
+            //         )
+            //     }
+            //     return true
+            // },
         },
     })
 
-    const uid: Key = [
-        `${baseUrl}/SEAL/${id}`,
-        tokens.id_token,
-    ]
+    // const uid: Key = [
+    //     `${baseUrl}/SEAL/${id}`,
+    //     tokens.id_token,
+    // ]
 
-    const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
-        props.isReadOnly ? uid : null,
-        ([url, token]) => fetcher(url, token),
-    )
+    // const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
+    //     props.isReadOnly ? uid : null,
+    //     ([url, token]) => fetcher(url, token),
+    // )
 
     useEffect(() => {
-        if (data) {
-            const sealRecord: SEALRecord = data.record
+        form.setFieldValue("contactNumber", user?.phoneNumber!)
+    }, [user])
 
-            form.setValues({
-                name: sealRecord.name,
-                type: sealRecord.type,
-                duration: sealRecord.duration?.map(date => {
-                    return DateTime.fromISO(date).toJSDate()
-                }) as DateRangePickerValue,
-                document: null,
-                involvement: sealRecord.involvement,
-                awardDetails: sealRecord.award_details,
-                groupMembers: sealRecord.members
-                    .map(member => {
-                        return `${member.name}, ${member.admission_number}`
-                    })
-                    .join("\n"),
-            })
-            setIsSubmitting(false)
+    useEffect(() => {
+        if (type !== LeaveType.LOA && type !== LeaveType.MC) {
+            navigate("/student/leave")
         }
-    }, [data])
+    }, [type])
+
+    // useEffect(() => {
+    //     if (data) {
+    //         const sealRecord: SEALRecord = data.record
+
+    //         form.setValues({
+    //             name: sealRecord.name,
+    //             type: sealRecord.type,
+    //             duration: sealRecord.duration?.map(date => {
+    //                 return DateTime.fromISO(date).toJSDate()
+    //             }) as DateRangePickerValue,
+    //             document: null,
+    //             involvement: sealRecord.involvement,
+    //             awardDetails: sealRecord.award_details,
+    //             additionalInfo: sealRecord.members
+    //                 .map(member => {
+    //                     return `${member.name}, ${member.admission_number}`
+    //                 })
+    //                 .join("\n"),
+    //         })
+    //         setIsSubmitting(false)
+    //     }
+    // }, [data])
 
     const submitForm = async () => {
         form.validate()
 
-        let grpMemberList: GroupMember[] | [] = []
-
-        if (form.values.groupMembers !== "") {
-            grpMemberList = form.values.groupMembers
-                .split("\n")
-                .map(member => {
-                    const memberSplit = member.split(",")
-                    return {
-                        name: memberSplit[0],
-                        admission_number: memberSplit[1].trim(),
-                    }
-                })
-        }
-
         if (form.isValid()) {
             setIsSubmitting(true)
             const fileKey = await uploadDocument(form.values.document!)
-            postNewSEALRequest(fileKey!, grpMemberList)
+            console.log(fileKey)
+            postNewLeaveRequest(fileKey!)
         } else {
             console.log("Form is invalid")
         }
     }
 
-    const postNewSEALRequest = async (
-        fileKey: string,
-        groupMemberList: GroupMember[] | [],
-    ) => {
+    const postNewLeaveRequest = async (fileKey: string) => {
+
+        const gradedAssignment = form.values.gradedAssignment === "true"
+
         const body = JSON.stringify({
-            name: form.values.name,
             student_id: user?.username,
             staff_id: "carePersonId" in user! && user.carePersonId,
-            attachment_key: fileKey,
-            award_details: form.values.awardDetails,
+            type: type,
+            reason: form.values.reason,
             duration: form.values.duration?.map(date => {
                 return DateTime.fromJSDate(date!).toISODate()
             }),
-            involvement: form.values.involvement,
-            members: groupMemberList,
-            type: form.values.type,
+            additional_information: form.values.additionalInfo,
+            attachment: fileKey,
+            contact_number: form.values.contactNumber,
+            graded_assignment: gradedAssignment,
+            subjectAffected: gradedAssignment
+                ? form.values.subjectAffected
+                : undefined,
         })
 
-        const url = `${baseUrl}/SEAL/newRequest`
+        console.log(body)
+
+        const url = `${baseUrl}/leave/newRequest`
 
         try {
             const response = await fetch(url, {
@@ -178,12 +189,12 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
                     message: "Your request has been submitted.",
                 })
                 const uid: Key = [
-                    `${baseUrl}/SEAL/${user?.username}/${form.values.type}`,
+                    `${baseUrl}/leave/${user?.username}/${type}`,
                     tokens.id_token,
                 ]
                 mutate(uid)
                 setIsSubmitting(false)
-                navigate("/student/seal")
+                navigate("/student/leave")
             }
         } catch (error) {
             console.error(error)
@@ -196,7 +207,7 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
     }
 
     const uploadDocument = async (file: File) => {
-        const url = `${baseUrl}/SEAL/uploadLink/${user?.username}`
+        const url = `${baseUrl}/leave/uploadLink/${user?.username}`
 
         const s3Response = await fetch(url, {
             method: "GET",
@@ -237,12 +248,12 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
             <Grid.Col sx={{ minHeight: "90%" }}>
                 <Paper h={"100%"} shadow="md" radius="lg" p="lg">
                     <Title pb={"xl"}>Event/Award Details</Title>
-                    <Skeleton visible={props.isReadOnly && isLoading}>
+                    <Skeleton visible={false}>
                         <form onSubmit={form.onSubmit(() => submitForm())}>
                             <LoadingOverlay
-                                loaderProps={{variant: "dots"}}
+                                loaderProps={{ variant: "dots" }}
                                 transitionDuration={150}
-                                visible={isSubmitting &&!props.isReadOnly}
+                                visible={isSubmitting && !props.isReadOnly}
                                 overlayBlur={1}
                             />
                             <Group pb={30} grow sx={{ alignItems: "start" }}>
@@ -250,80 +261,94 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
                                     <TextInput
                                         withAsterisk
                                         readOnly={props.isReadOnly}
-                                        label="Name of event"
-                                        placeholder="Enter the name of the event"
-                                        {...form.getInputProps("name")}
+                                        label="Contact number"
+                                        placeholder="Enter your contact number"
+                                        {...form.getInputProps("contactNumber")}
                                     />
                                     <Select
                                         withAsterisk
                                         readOnly={props.isReadOnly}
-                                        label="Type of event"
-                                        placeholder="Select type of event"
+                                        label={`Reason for ${type}`}
+                                        placeholder="Select a reason"
                                         data={[
                                             {
-                                                value: "Service",
-                                                label: "Service",
+                                                value: "School event",
+                                                label: "School event",
                                             },
                                             {
-                                                value: "Enrichment",
-                                                label: "Enrichment",
+                                                value: "External event",
+                                                label: "External event",
                                             },
                                             {
-                                                value: "Achievement",
-                                                label: "Achievement",
+                                                value: "Family emergency",
+                                                label: "Family emergency",
                                             },
                                             {
-                                                value: "Leadership",
-                                                label: "Leadership",
+                                                value: "Others",
+                                                label: "Others",
                                             },
                                         ]}
-                                        {...form.getInputProps("type")}
-                                    />
-                                    <TextInput
-                                        withAsterisk
-                                        readOnly={props.isReadOnly}
-                                        label="Involvement"
-                                        placeholder="Enter your involvement in the event"
-                                        {...form.getInputProps("involvement")}
+                                        {...form.getInputProps("reason")}
                                     />
                                     <DateRangePicker
                                         withAsterisk
                                         readOnly={props.isReadOnly}
                                         defaultValue={undefined}
-                                        label="Duration of event"
-                                        placeholder="Select when the event took place"
+                                        label={`Duration of ${type}`}
+                                        placeholder="Select a date range"
                                         {...form.getInputProps("duration")}
                                     />
                                     <FileInput
                                         readOnly={props.isReadOnly}
-                                        label="Supporting Document"
+                                        label="Supporting Documents"
                                         placeholder="Upload a document"
                                         description="Please only upload PDF files"
                                         {...form.getInputProps("document")}
                                     />
                                 </Stack>
                                 <Stack spacing="lg">
-                                    <Textarea
+                                    <Select
+                                        withAsterisk
                                         readOnly={props.isReadOnly}
-                                        label="Award details (If applicable)"
-                                        placeholder={
-                                            form.values.type &&
-                                            form.values.type !== "Achievement"
-                                                ? `Not applicable for ${form.values.type} events`
-                                                : `Please enter details of any awards you have received`
+                                        label="Graded Assignment"
+                                        placeholder="Select if you have a graded assignment during this period"
+                                        data={[
+                                            {
+                                                value: "true",
+                                                label: "Yes",
+                                            },
+                                            {
+                                                value: "false",
+                                                label: "No",
+                                            },
+                                        ]}
+                                        {...form.getInputProps(
+                                            "gradedAssignment",
+                                        )}
+                                    />
+                                    <TextInput
+                                        display={
+                                            form.values.gradedAssignment ===
+                                            "true"
+                                                ? ""
+                                                : "none"
                                         }
-                                        minRows={5}
-                                        disabled={
-                                            form.values.type !== "Achievement"
-                                        }
-                                        {...form.getInputProps("awardDetails")}
+                                        withAsterisk
+                                        label="Subject & Lecturer Name"
                                     />
                                     <Textarea
                                         readOnly={props.isReadOnly}
-                                        label="Group member details (If applicable)"
-                                        placeholder={`Please enter details in this format\nName one, Admin number\nName two, Admin number`}
-                                        minRows={8}
-                                        {...form.getInputProps("groupMembers")}
+                                        label="Additional Information"
+                                        placeholder={`Please enter any other relevant information`}
+                                        minRows={
+                                            form.values.gradedAssignment ===
+                                            "true"
+                                                ? 5
+                                                : 8
+                                        }
+                                        {...form.getInputProps(
+                                            "additionalInfo",
+                                        )}
                                     />
                                 </Stack>
                             </Group>
@@ -347,4 +372,4 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
     )
 }
 
-export default NewSealStudent
+export default NewLeaveStudent

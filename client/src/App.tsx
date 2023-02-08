@@ -16,6 +16,7 @@ import StaffRoute from "./pages/StaffRoute"
 import CalculatorStudent from "./pages/Student/CalculatorStudent"
 import HomeStudent from "./pages/Student/HomeStudent"
 import LeaveStudent from "./pages/Student/LeaveStudent"
+import NewLeaveStudent from "./pages/Student/NewLeaveStudent"
 import NewSealStudent from "./pages/Student/NewSealStudent"
 import ResultsStudent from "./pages/Student/ResultsStudent"
 import SealStudent from "./pages/Student/SealStudent"
@@ -73,6 +74,7 @@ const App = () => {
                     <Route path="home" element={<HomeStudent />} />
                     <Route path="results" element={<ResultsStudent />} />
                     <Route path="leave" element={<LeaveStudent />} />
+                    <Route path="leave/new/:type" element={<NewLeaveStudent isReadOnly={false} />} />
                     <Route path="seal" element={<SealStudent />} />
                     <Route path="seal/new" element={<NewSealStudent isReadOnly={false} />} />
                     <Route path="seal/:id" element={<NewSealStudent isReadOnly />} />
