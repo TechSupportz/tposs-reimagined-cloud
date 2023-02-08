@@ -3,6 +3,6 @@ export enum LeaveType {
 	MC = "MC",
 }
 
-export type LOAReasons = "School event" | "External event" | "Family emergency" | "Other";
+export type LOAReasons = "School event" | "External event" | "Family emergency" | "Others";
 
-export type MCReasons = "Medical Leave" | "Hospitalization Leave";
+export type MCReasons = "Medical leave" | "Hospitalization leave";

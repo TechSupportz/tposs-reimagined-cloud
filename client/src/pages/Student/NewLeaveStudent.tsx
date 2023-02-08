@@ -28,16 +28,17 @@ import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
-import { LeaveType } from "../../types/Leave"
+import { LeaveType, LOAReasons, MCReasons } from "../../types/Leave"
 
-interface LOARequestForm {
+interface LeaveRequestForm {
     contactNumber: string
-    reason: string
+    reason: LOAReasons | MCReasons | ""
     duration: DateRangePickerValue | undefined
     document: File | null
-    gradedAssignment: "true" | "false" | boolean
-    subjectAffected: string | null
     additionalInfo: string
+    gradedAssignment: "true" | "false" | boolean
+    mcNumber: string
+    clinicName: string
 }
 
 interface S3UploadLink {
@@ -53,15 +54,16 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
 
     const navigate = useNavigate()
 
-    const form = useForm<LOARequestForm>({
+    const form = useForm<LeaveRequestForm>({
         initialValues: {
             contactNumber: "",
             reason: "",
             duration: undefined,
             document: null,
-            gradedAssignment: "false",
-            subjectAffected: null,
             additionalInfo: "",
+            gradedAssignment: "false",
+            mcNumber: "",
+            clinicName: "",
         },
         validateInputOnBlur: !props.isReadOnly,
         validateInputOnChange: false,
@@ -73,21 +75,24 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
             reason: isNotEmpty("Please select a reason"),
             duration: isNotEmpty("Please select a duration"),
             document: isNotEmpty("Please upload a document"),
-            gradedAssignment: isNotEmpty("Please select an option"),
-            // subjectAffected: value => {
-            //     if (form.values.gradedAssignment && !value) {
-            //         return "Please select a subject"
-            //     }
-            //     return null
-            // },
-            // additionalInfo: value => {
-            //     if (form.values.reason === "Other") {
-            //         return isNotEmpty("Please specify your reason for LOA")(
-            //             value,
-            //         )
-            //     }
-            //     return true
-            // },
+            mcNumber: value =>
+                type === LeaveType.MC && value.length === 0
+                    ? "Please enter your MC Number"
+                    : null,
+            clinicName: value =>
+                type === LeaveType.MC && value.length === 0
+                    ? "Please enter the name of the clinic"
+                    : null,
+            additionalInfo: (value, values) =>
+                values.reason === "Others" &&
+                value.length === 0 &&
+                values.gradedAssignment === "true"
+                    ? "Please specify your reason for LOA and the name of the subject which is affected"
+                    : values.reason === "Others" && value.length === 0
+                    ? "Please specify your reason for LOA"
+                    : values.gradedAssignment === "true" && value.length === 0
+                    ? "Please specify the name of the subject which is affected"
+                    : null,
         },
     })
 
@@ -148,25 +153,40 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
     }
 
     const postNewLeaveRequest = async (fileKey: string) => {
+        let body: string
 
-        const gradedAssignment = form.values.gradedAssignment === "true"
+        if (type === LeaveType.LOA) {
+            const gradedAssignment = form.values.gradedAssignment === "true"
 
-        const body = JSON.stringify({
-            student_id: user?.username,
-            staff_id: "carePersonId" in user! && user.carePersonId,
-            type: type,
-            reason: form.values.reason,
-            duration: form.values.duration?.map(date => {
-                return DateTime.fromJSDate(date!).toISODate()
-            }),
-            additional_information: form.values.additionalInfo,
-            attachment: fileKey,
-            contact_number: form.values.contactNumber,
-            graded_assignment: gradedAssignment,
-            subjectAffected: gradedAssignment
-                ? form.values.subjectAffected
-                : undefined,
-        })
+            body = JSON.stringify({
+                student_id: user?.username,
+                staff_id: "carePersonId" in user! && user.carePersonId,
+                type: type,
+                reason: form.values.reason,
+                duration: form.values.duration?.map(date => {
+                    return DateTime.fromJSDate(date!).toISODate()
+                }),
+                additional_information: form.values.additionalInfo,
+                attachment: fileKey,
+                contact_number: form.values.contactNumber,
+                graded_assignment: gradedAssignment,
+            })
+        } else {
+            body = JSON.stringify({
+                student_id: user?.username,
+                staff_id: "carePersonId" in user! && user.carePersonId,
+                type: type,
+                reason: form.values.reason,
+                duration: form.values.duration?.map(date => {
+                    return DateTime.fromJSDate(date!).toISODate()
+                }),
+                additional_information: form.values.additionalInfo,
+                attachment: fileKey,
+                contact_number: form.values.contactNumber,
+                mc_number: form.values.mcNumber,
+                clinic: form.values.clinicName,
+            })
+        }
 
         console.log(body)
 
@@ -270,24 +290,37 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                         readOnly={props.isReadOnly}
                                         label={`Reason for ${type}`}
                                         placeholder="Select a reason"
-                                        data={[
-                                            {
-                                                value: "School event",
-                                                label: "School event",
-                                            },
-                                            {
-                                                value: "External event",
-                                                label: "External event",
-                                            },
-                                            {
-                                                value: "Family emergency",
-                                                label: "Family emergency",
-                                            },
-                                            {
-                                                value: "Others",
-                                                label: "Others",
-                                            },
-                                        ]}
+                                        data={
+                                            type === LeaveType.LOA
+                                                ? [
+                                                      {
+                                                          value: "School event",
+                                                          label: "School event",
+                                                      },
+                                                      {
+                                                          value: "External event",
+                                                          label: "External event",
+                                                      },
+                                                      {
+                                                          value: "Family emergency",
+                                                          label: "Family emergency",
+                                                      },
+                                                      {
+                                                          value: "Others",
+                                                          label: "Others",
+                                                      },
+                                                  ]
+                                                : [
+                                                      {
+                                                          value: "Medical leave",
+                                                          label: "Medical leave",
+                                                      },
+                                                      {
+                                                          value: "Hospitalisation leave",
+                                                          label: "Hospitalisation leave",
+                                                      },
+                                                  ]
+                                        }
                                         {...form.getInputProps("reason")}
                                     />
                                     <DateRangePicker
@@ -308,6 +341,9 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                 </Stack>
                                 <Stack spacing="lg">
                                     <Select
+                                        display={
+                                            type === LeaveType.LOA ? "" : "none"
+                                        }
                                         withAsterisk
                                         readOnly={props.isReadOnly}
                                         label="Graded Assignment"
@@ -326,26 +362,29 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                             "gradedAssignment",
                                         )}
                                     />
+
                                     <TextInput
                                         display={
-                                            form.values.gradedAssignment ===
-                                            "true"
-                                                ? ""
-                                                : "none"
+                                            type === LeaveType.MC ? "" : "none"
                                         }
                                         withAsterisk
-                                        label="Subject & Lecturer Name"
+                                        label="MC Number"
+                                        {...form.getInputProps("mcNumber")}
                                     />
+                                    <TextInput
+                                        display={
+                                            type === LeaveType.MC ? "" : "none"
+                                        }
+                                        withAsterisk
+                                        label="Clinic Name"
+                                        {...form.getInputProps("clinicName")}
+                                    />
+
                                     <Textarea
                                         readOnly={props.isReadOnly}
                                         label="Additional Information"
                                         placeholder={`Please enter any other relevant information`}
-                                        minRows={
-                                            form.values.gradedAssignment ===
-                                            "true"
-                                                ? 5
-                                                : 8
-                                        }
+                                        minRows={type === LeaveType.LOA ? 9 : 5}
                                         {...form.getInputProps(
                                             "additionalInfo",
                                         )}
