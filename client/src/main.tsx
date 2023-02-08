@@ -15,6 +15,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         value={{
             onError: (error, key) => {
                 console.log(error)
+                console.log("SHITS FUCKED BRO")
             },
         }}>
         <MantineProvider

@@ -13,9 +13,10 @@ import {
     Group,
     Grid,
     Title,
+    Tooltip,
 } from "@mantine/core"
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
-import { isNotEmpty, useForm } from "@mantine/form"
+import { isNotEmpty, matches, useForm } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
 import { CalendarMonth } from "@styled-icons/material-rounded"
 import { useState } from "react"
@@ -35,6 +36,11 @@ interface SealRequestForm {
     involvement: string
     awardDetails: string
     groupMembers: string
+}
+
+interface GroupMember {
+    name: string
+    admission_number: string
 }
 
 interface S3UploadLink {
@@ -60,30 +66,46 @@ const NewSealStudent = () => {
             groupMembers: "",
         },
         validateInputOnBlur: true,
-        validateInputOnChange: true,
+        validateInputOnChange: false,
         validate: {
             name: isNotEmpty("Please enter the name of the event"),
             type: isNotEmpty("Please select a type"),
             duration: isNotEmpty("Please select a duration"),
             document: isNotEmpty("Please upload a document"),
             involvement: isNotEmpty("Please enter your involvement"),
+            groupMembers: matches(
+                /^([a-zA-Z]+(([ ]+[a-zA-Z]+)?)+,[ ]*[0-9]{7}[a-zA-Z](\n|$))+$/,
+                "Please enter group members in the correct format",
+            ),
         },
     })
 
     const submitForm = async () => {
         form.validate()
-        // console.log(form.values)
+
+        const grpMemberList: GroupMember[] = form.values.groupMembers
+            .split("\n")
+            .map(member => {
+                const memberSplit = member.split(",")
+                return {
+                    name: memberSplit[0],
+                    admission_number: memberSplit[1].trim(),
+                }
+            })
 
         if (form.isValid()) {
             setIsSubmitting(true)
             const fileKey = await uploadDocument(form.values.document!)
-            postNewSEALRequest(fileKey!)
+            postNewSEALRequest(fileKey!, grpMemberList)
         } else {
             console.log("Form is invalid")
         }
     }
 
-    const postNewSEALRequest = async (fileKey: string) => {
+    const postNewSEALRequest = async (
+        fileKey: string,
+        groupMemberList: GroupMember[],
+    ) => {
         const body = JSON.stringify({
             name: form.values.name,
             student_id: user?.username,
@@ -94,7 +116,7 @@ const NewSealStudent = () => {
                 return DateTime.fromJSDate(date!).toISODate()
             }),
             involvement: form.values.involvement,
-            members: form.values.groupMembers,
+            members: groupMemberList,
             type: form.values.type,
         })
 
@@ -234,13 +256,22 @@ const NewSealStudent = () => {
                             <Stack spacing="lg">
                                 <Textarea
                                     label="Award details (If applicable)"
-                                    placeholder={`Please enter details of any awards you have received`}
+                                    placeholder={
+                                        form.values.type &&
+                                        form.values.type !== "Achievement"
+                                            ? `Not applicable for ${form.values.type} events`
+                                            : `Please enter details of any awards you have received`
+                                    }
                                     minRows={5}
+                                    disabled={
+                                        form.values.type !== "Achievement"
+                                    }
                                     {...form.getInputProps("awardDetails")}
                                 />
+
                                 <Textarea
                                     label="Group member details (If applicable)"
-                                    placeholder={`Please enter details in this format\nName, Admin number`}
+                                    placeholder={`Please enter details in this format\nName one, Admin number\nName two, Admin number`}
                                     minRows={8}
                                     {...form.getInputProps("groupMembers")}
                                 />

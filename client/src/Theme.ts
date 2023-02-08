@@ -87,6 +87,7 @@ export const theme: MantineThemeOverride = {
                 error: {
                     color: theme.colors.red[6],
                 },
+                
             }),
         },
         TextInput: {
