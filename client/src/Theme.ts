@@ -1,4 +1,5 @@
 import {
+    createStyles,
     MantineThemeOverride,
     PaperStylesParams,
     TabsStylesParams,
@@ -7,6 +8,8 @@ import { InputStylesParams } from "@mantine/core/lib/Input"
 import { DateRangePickerProps } from "@mantine/dates/lib/components/DateRangePicker"
 import { CalendarMonth } from "@styled-icons/material-rounded"
 import { ReactNode } from "react"
+
+
 
 export const theme: MantineThemeOverride = {
     fontFamily: "Lato, sans-serif",
@@ -60,6 +63,7 @@ export const theme: MantineThemeOverride = {
                 },
             }),
         },
+    
         Input: {
             defaultProps: {
                 radius: "md",
@@ -87,30 +91,29 @@ export const theme: MantineThemeOverride = {
                 error: {
                     color: theme.colors.red[6],
                 },
-                
             }),
         },
         TextInput: {
             defaultProps: {
-                size: "md"
-            }
+                size: "md",
+            },
         },
         FileInput: {
             defaultProps: {
-                size: "md"
-            }
+                size: "md",
+            },
         },
         Textarea: {
             defaultProps: {
-                size: "md"
-            }
+                size: "md",
+            },
         },
         Select: {
             defaultProps: theme => ({
                 transition: "scale-y",
                 transitionDuration: 200,
                 transitionTimingFunction: "ease",
-                size: "md"
+                size: "md",
             }),
         },
         DateRangePicker: {
@@ -128,8 +131,17 @@ export const theme: MantineThemeOverride = {
         Skeleton: {
             defaultProps: {
                 radius: "md",
-            }
-        }
-        
+            },
+        },
     },
 }
+
+export const useStyles = createStyles(theme => ({
+    table: {
+        border: `3px solid ${theme.colors.brand[4]}`,
+        backgroundColor: "hsl(0, 100%, 97%)",
+    },
+    tr: {
+        borderColor: theme.colors.brand[2],
+    }
+}))

@@ -21,14 +21,8 @@ import { Navigate, useNavigate } from "react-router-dom"
 import useSWR, { Key } from "swr"
 import { baseUrl, fetcher } from "../app/services/api"
 import useAppStore from "../app/Store"
+import { useStyles } from "../Theme"
 import { SEALRecordsAPI, SEALType } from "../types/SEAL"
-
-const useStyles = createStyles(theme => ({
-    table: {
-        border: `3px solid ${theme.colors.brand[4]}`,
-        backgroundColor: "hsl(0, 100%, 97%)",
-    },
-}))
 
 const SEALTableCard = () => {
     const navigate = useNavigate()
@@ -103,7 +97,7 @@ const SEALTableCard = () => {
                                 { accessor: "Involvement" },
                                 { accessor: "Points Awarded" },
                             ]}
-                            records={data?.items.map((record, index) => ({
+                            records={data?.items.map((record) => ({
                                 "Academic Year":
                                     record.duration[1].split("-")[0],
                                 Activity: record.name,
