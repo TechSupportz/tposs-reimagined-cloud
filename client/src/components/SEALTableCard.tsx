@@ -21,7 +21,7 @@ import { Navigate, useNavigate } from "react-router-dom"
 import useSWR, { Key } from "swr"
 import { baseUrl, fetcher } from "../app/services/api"
 import useAppStore from "../app/Store"
-import { SEALRecordAPI, SEALType } from "../types/SEAL"
+import { SEALRecordsAPI, SEALType } from "../types/SEAL"
 
 const useStyles = createStyles(theme => ({
     table: {
@@ -33,12 +33,12 @@ const useStyles = createStyles(theme => ({
 const SEALTableCard = () => {
     const navigate = useNavigate()
 
-    const tokens = useAppStore(state => state.tokens)    
-    const user = useAppStore(state => state.userInfo)    
-    
-    const selectedType = useAppStore(state => state.selectedType)    
-    const setSelectedType = useAppStore(state => state.setSelectedType)    
-    
+    const tokens = useAppStore(state => state.tokens)
+    const user = useAppStore(state => state.userInfo)
+
+    const selectedType = useAppStore(state => state.selectedType)
+    const setSelectedType = useAppStore(state => state.setSelectedType)
+
     const { classes } = useStyles()
 
     const uid: Key = [
@@ -46,7 +46,7 @@ const SEALTableCard = () => {
         tokens.id_token,
     ]
 
-    const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
+    const { data, error, isLoading } = useSWR<SEALRecordsAPI, Error>(
         selectedType ? uid : null,
         ([url, token]) => fetcher(url, token),
     )
@@ -78,6 +78,10 @@ const SEALTableCard = () => {
                             rowStyle={{ backgroundColor: "hsl(0, 100%, 97%)" }}
                             fetching={isLoading}
                             loaderVariant="dots"
+                            onRowClick={row => {
+                                navigate(`${row.Key}`)
+                            }}
+                            textSelectionDisabled
                             emptyState={
                                 data?.items.length === 0 ? (
                                     <Stack align="center" spacing="xs">
@@ -99,12 +103,13 @@ const SEALTableCard = () => {
                                 { accessor: "Involvement" },
                                 { accessor: "Points Awarded" },
                             ]}
-                            records={data?.items.map(record => ({
+                            records={data?.items.map((record, index) => ({
                                 "Academic Year":
                                     record.duration[1].split("-")[0],
                                 Activity: record.name,
                                 Involvement: record.involvement,
                                 "Points Awarded": record.points,
+                                Key: record.seal_id,
                             }))}
                         />
                     </Box>

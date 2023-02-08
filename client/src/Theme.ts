@@ -125,5 +125,11 @@ export const theme: MantineThemeOverride = {
                 },
             }),
         },
+        Skeleton: {
+            defaultProps: {
+                radius: "md",
+            }
+        }
+        
     },
 }

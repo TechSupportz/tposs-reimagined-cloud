@@ -74,7 +74,8 @@ const App = () => {
                     <Route path="results" element={<ResultsStudent />} />
                     <Route path="leave" element={<LeaveStudent />} />
                     <Route path="seal" element={<SealStudent />} />
-                    <Route path="seal/new" element={<NewSealStudent />} />
+                    <Route path="seal/new" element={<NewSealStudent isReadOnly={false} />} />
+                    <Route path="seal/:id" element={<NewSealStudent isReadOnly />} />
                     <Route path="subject" element={<SubjectStudent />} />
                     <Route path="calculator" element={<CalculatorStudent />} />
                 </Route>

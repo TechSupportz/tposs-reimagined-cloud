@@ -14,18 +14,19 @@ import {
     Grid,
     Title,
     Tooltip,
+    Skeleton,
 } from "@mantine/core"
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
 import { isNotEmpty, matches, useForm } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
 import { CalendarMonth } from "@styled-icons/material-rounded"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import useSWR, { Key, mutate } from "swr"
 import { baseUrl, fetcher } from "../../app/services/api"
 import useAppStore from "../../app/Store"
-import { SEALType } from "../../types/SEAL"
+import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
 
 interface SealRequestForm {
@@ -48,10 +49,11 @@ interface S3UploadLink {
     key: string
 }
 
-const NewSealStudent = () => {
+const NewSealStudent = (props: { isReadOnly: boolean }) => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(props.isReadOnly)
+    const url = useLocation().pathname
 
     const navigate = useNavigate()
 
@@ -65,7 +67,7 @@ const NewSealStudent = () => {
             awardDetails: "",
             groupMembers: "",
         },
-        validateInputOnBlur: true,
+        validateInputOnBlur: !props.isReadOnly,
         validateInputOnChange: false,
         validate: {
             name: isNotEmpty("Please enter the name of the event"),
@@ -74,24 +76,61 @@ const NewSealStudent = () => {
             document: isNotEmpty("Please upload a document"),
             involvement: isNotEmpty("Please enter your involvement"),
             groupMembers: matches(
-                /^([a-zA-Z]+(([ ]+[a-zA-Z]+)?)+,[ ]*[0-9]{7}[a-zA-Z](\n|$))+$/,
+                /^(([a-zA-Z]+(([ ]+[a-zA-Z]+)?)+,[ ]*[0-9]{7}[a-zA-Z](\n|$))*|)$/,
                 "Please enter group members in the correct format",
             ),
         },
     })
 
+    const uid: Key = [
+        `${baseUrl}/SEAL/${url.split("/").pop()}`,
+        tokens.id_token,
+    ]
+
+    const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
+        props.isReadOnly ? uid : null,
+        ([url, token]) => fetcher(url, token),
+    )
+
+    useEffect(() => {
+        if (data) {
+            const sealRecord: SEALRecord = data.record
+
+            form.setValues({
+                name: sealRecord.name,
+                type: sealRecord.type,
+                duration: sealRecord.duration?.map(date => {
+                    return DateTime.fromISO(date).toJSDate()
+                }) as DateRangePickerValue,
+                document: null,
+                involvement: sealRecord.involvement,
+                awardDetails: sealRecord.award_details,
+                groupMembers: sealRecord.members
+                    .map(member => {
+                        return `${member.name}, ${member.admission_number}`
+                    })
+                    .join("\n"),
+            })
+            setIsSubmitting(false)
+        }
+    }, [data])
+
     const submitForm = async () => {
         form.validate()
 
-        const grpMemberList: GroupMember[] = form.values.groupMembers
-            .split("\n")
-            .map(member => {
-                const memberSplit = member.split(",")
-                return {
-                    name: memberSplit[0],
-                    admission_number: memberSplit[1].trim(),
-                }
-            })
+        let grpMemberList: GroupMember[] | [] = []
+
+        if (form.values.groupMembers !== "") {
+            grpMemberList = form.values.groupMembers
+                .split("\n")
+                .map(member => {
+                    const memberSplit = member.split(",")
+                    return {
+                        name: memberSplit[0],
+                        admission_number: memberSplit[1].trim(),
+                    }
+                })
+        }
 
         if (form.isValid()) {
             setIsSubmitting(true)
@@ -104,7 +143,7 @@ const NewSealStudent = () => {
 
     const postNewSEALRequest = async (
         fileKey: string,
-        groupMemberList: GroupMember[],
+        groupMemberList: GroupMember[] | [],
     ) => {
         const body = JSON.stringify({
             name: form.values.name,
@@ -198,94 +237,111 @@ const NewSealStudent = () => {
             <Grid.Col sx={{ minHeight: "90%" }}>
                 <Paper h={"100%"} shadow="md" radius="lg" p="lg">
                     <Title pb={"xl"}>Event/Award Details</Title>
-                    <form onSubmit={form.onSubmit(() => submitForm())}>
-                        <LoadingOverlay
-                            transitionDuration={150}
-                            visible={isSubmitting}
-                            overlayBlur={1}
-                        />
-                        <Group pb={30} grow sx={{ alignItems: "start" }}>
-                            <Stack spacing="lg">
-                                <TextInput
-                                    withAsterisk
-                                    label="Name of event"
-                                    placeholder="Enter the name of the event"
-                                    {...form.getInputProps("name")}
-                                />
-                                <Select
-                                    withAsterisk
-                                    label="Type of event"
-                                    placeholder="Select type of event"
-                                    data={[
-                                        { value: "Service", label: "Service" },
-                                        {
-                                            value: "Enrichment",
-                                            label: "Enrichment",
-                                        },
-                                        {
-                                            value: "Achievement",
-                                            label: "Achievement",
-                                        },
-                                        {
-                                            value: "Leadership",
-                                            label: "Leadership",
-                                        },
-                                    ]}
-                                    {...form.getInputProps("type")}
-                                />
-                                <TextInput
-                                    withAsterisk
-                                    label="Involvement"
-                                    placeholder="Enter your involvement in the event"
-                                    {...form.getInputProps("involvement")}
-                                />
-                                <DateRangePicker
-                                    withAsterisk
-                                    defaultValue={undefined}
-                                    label="Duration of event"
-                                    placeholder="Select when the event took place"
-                                    {...form.getInputProps("duration")}
-                                />
-                                <FileInput
-                                    label="Supporting Documents"
-                                    placeholder="Upload a document"
-                                    description="Please only upload PDF files"
-                                    {...form.getInputProps("document")}
-                                />
-                            </Stack>
-                            <Stack spacing="lg">
-                                <Textarea
-                                    label="Award details (If applicable)"
-                                    placeholder={
-                                        form.values.type &&
-                                        form.values.type !== "Achievement"
-                                            ? `Not applicable for ${form.values.type} events`
-                                            : `Please enter details of any awards you have received`
-                                    }
-                                    minRows={5}
-                                    disabled={
-                                        form.values.type !== "Achievement"
-                                    }
-                                    {...form.getInputProps("awardDetails")}
-                                />
+                    <Skeleton visible={props.isReadOnly && isLoading}>
+                        <form onSubmit={form.onSubmit(() => submitForm())}>
+                            <LoadingOverlay
+                                loaderProps={{variant: "dots"}}
+                                transitionDuration={150}
+                                visible={isSubmitting &&!props.isReadOnly}
+                                overlayBlur={1}
+                            />
+                            <Group pb={30} grow sx={{ alignItems: "start" }}>
+                                <Stack spacing="lg">
+                                    <TextInput
+                                        withAsterisk
+                                        readOnly={props.isReadOnly}
+                                        label="Name of event"
+                                        placeholder="Enter the name of the event"
+                                        {...form.getInputProps("name")}
+                                    />
+                                    <Select
+                                        withAsterisk
+                                        readOnly={props.isReadOnly}
+                                        label="Type of event"
+                                        placeholder="Select type of event"
+                                        data={[
+                                            {
+                                                value: "Service",
+                                                label: "Service",
+                                            },
+                                            {
+                                                value: "Enrichment",
+                                                label: "Enrichment",
+                                            },
+                                            {
+                                                value: "Achievement",
+                                                label: "Achievement",
+                                            },
+                                            {
+                                                value: "Leadership",
+                                                label: "Leadership",
+                                            },
+                                        ]}
+                                        {...form.getInputProps("type")}
+                                    />
+                                    <TextInput
+                                        withAsterisk
+                                        readOnly={props.isReadOnly}
+                                        label="Involvement"
+                                        placeholder="Enter your involvement in the event"
+                                        {...form.getInputProps("involvement")}
+                                    />
+                                    <DateRangePicker
+                                        withAsterisk
+                                        readOnly={props.isReadOnly}
+                                        defaultValue={undefined}
+                                        label="Duration of event"
+                                        placeholder="Select when the event took place"
+                                        {...form.getInputProps("duration")}
+                                    />
+                                    <FileInput
+                                        readOnly={props.isReadOnly}
+                                        label="Supporting Documents"
+                                        placeholder="Upload a document"
+                                        description="Please only upload PDF files"
+                                        {...form.getInputProps("document")}
+                                    />
+                                </Stack>
+                                <Stack spacing="lg">
+                                    <Textarea
+                                        readOnly={props.isReadOnly}
+                                        label="Award details (If applicable)"
+                                        placeholder={
+                                            form.values.type &&
+                                            form.values.type !== "Achievement"
+                                                ? `Not applicable for ${form.values.type} events`
+                                                : `Please enter details of any awards you have received`
+                                        }
+                                        minRows={5}
+                                        disabled={
+                                            form.values.type !== "Achievement"
+                                        }
+                                        {...form.getInputProps("awardDetails")}
+                                    />
 
-                                <Textarea
-                                    label="Group member details (If applicable)"
-                                    placeholder={`Please enter details in this format\nName one, Admin number\nName two, Admin number`}
-                                    minRows={8}
-                                    {...form.getInputProps("groupMembers")}
-                                />
+                                    <Textarea
+                                        readOnly={props.isReadOnly}
+                                        label="Group member details (If applicable)"
+                                        placeholder={`Please enter details in this format\nName one, Admin number\nName two, Admin number`}
+                                        minRows={8}
+                                        {...form.getInputProps("groupMembers")}
+                                    />
+                                </Stack>
+                            </Group>
+                            <Stack>
+                                <Button
+                                    display={props.isReadOnly ? "none" : ""}
+                                    type="submit">
+                                    Submit
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => navigate(-1)}>
+                                    {props.isReadOnly ? "Back" : "Cancel"}
+                                </Button>
                             </Stack>
-                        </Group>
-                        <Stack>
-                            <Button type="submit">Submit</Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate(-1)}>
-                                Cancel
-                            </Button>
-                        </Stack>
-                    </form>
+                        </form>
+                    </Skeleton>
                 </Paper>
             </Grid.Col>
         </Grid>

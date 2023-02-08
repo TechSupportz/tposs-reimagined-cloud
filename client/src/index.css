@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 * {
     transition: all 0.15s ease-out;
@@ -10,8 +10,6 @@ body,
 #root {
     height: 100%;
 }
-
-
 
 th {
     background-color: var(--mantine-color-brand-3);
@@ -25,4 +23,8 @@ th {
 td {
     border-width: 3px !important;
     font-weight: 600;
+}
+
+tr:hover td {
+    background-color: var(--mantine-color-brand-1) !important;
 }
