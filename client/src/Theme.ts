@@ -61,10 +61,10 @@ export const theme: MantineThemeOverride = {
             }),
         },
         Input: {
-            defaultProps: theme => ({
+            defaultProps: {
                 radius: "md",
                 variant: "filled",
-            }),
+            },
             styles: (theme, params: InputStylesParams) => ({
                 input: {
                     borderWidth: 2,
@@ -89,17 +89,34 @@ export const theme: MantineThemeOverride = {
                 },
             }),
         },
+        TextInput: {
+            defaultProps: {
+                size: "md"
+            }
+        },
+        FileInput: {
+            defaultProps: {
+                size: "md"
+            }
+        },
+        Textarea: {
+            defaultProps: {
+                size: "md"
+            }
+        },
         Select: {
             defaultProps: theme => ({
                 transition: "scale-y",
                 transitionDuration: 200,
                 transitionTimingFunction: "ease",
+                size: "md"
             }),
         },
         DateRangePicker: {
             defaultProps: theme => ({
                 transitionDuration: 200,
                 transitionTimingFunction: "ease",
+                size: "md",
             }),
             styles: (theme, params) => ({
                 weekdayCell: {

@@ -86,6 +86,7 @@ const Authenticate = () => {
                 role: "student",
                 school: decodedToken["custom:school"] as string,
                 course: decodedToken["custom:course"] as string,
+                year: decodedToken["custom:year"] as number,
                 carePersonId: decodedToken["custom:care_person_id"] as string,
                 phoneNumber: decodedToken.phone_number as string,
             }

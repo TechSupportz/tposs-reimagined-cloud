@@ -1,3 +1,4 @@
+import { DateTime } from "luxon"
 import { StateCreator } from "zustand"
 import { UserRole } from "../../types/UserRole"
 
@@ -15,6 +16,7 @@ export interface StudentInfo {
     role: UserRole
     school: string
     course: string
+    year: number
     carePersonId: string
     phoneNumber: string
 }
@@ -30,6 +32,7 @@ export interface StaffInfo {
 export interface AuthSlice {
     tokens: AuthTokens
     userInfo: StudentInfo | StaffInfo | null
+    currentSemester: 1 | 2
     setUser: (tokens: AuthTokens, user: StudentInfo | StaffInfo) => void
     clearUser: () => void
 }
@@ -44,6 +47,8 @@ export const createAuthSlice: StateCreator<AuthSlice> = set => ({
     },
 
     userInfo: null,
+
+    currentSemester: DateTime.now().month > 6 ? 2 : 1,
 
     setUser: (tokens: AuthTokens, user: StudentInfo | StaffInfo) => {
         set({

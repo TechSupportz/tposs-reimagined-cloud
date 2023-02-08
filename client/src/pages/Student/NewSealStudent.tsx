@@ -7,6 +7,12 @@ import {
     TextInput,
     Button,
     LoadingOverlay,
+    Box,
+    Paper,
+    Flex,
+    Group,
+    Grid,
+    Title,
 } from "@mantine/core"
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
 import { isNotEmpty, useForm } from "@mantine/form"
@@ -19,6 +25,7 @@ import useAppStore from "../../app/Store"
 import { SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
 import { useNavigate } from "react-router-dom"
+import StudentInfoCard from "../../components/StudentInfoCard"
 
 interface SealRequestForm {
     name: string
@@ -161,62 +168,96 @@ const NewSealStudent = () => {
     }
 
     return (
-        <form onSubmit={form.onSubmit(() => submitForm())}>
-            <LoadingOverlay
-                transitionDuration={150}
-                visible={isSubmitting}
-                overlayBlur={1}
-            />
-            <Stack spacing="xl">
-                <TextInput
-                    withAsterisk
-                    label="Name of event"
-                    placeholder="Enter the name of the event"
-                    {...form.getInputProps("name")}
-                />
-                <Select
-                    withAsterisk
-                    label="Type of event"
-                    placeholder="Select type of event"
-                    data={[
-                        { value: "Service", label: "Service" },
-                        { value: "Enrichment", label: "Enrichment" },
-                        { value: "Achievement", label: "Achievement" },
-                        { value: "Leadership", label: "Leadership" },
-                    ]}
-                    {...form.getInputProps("type")}
-                />
-                <TextInput
-                    withAsterisk
-                    label="Involvement"
-                    placeholder="Enter your involvement in the event"
-                    {...form.getInputProps("involvement")}
-                />
-                <DateRangePicker
-                    withAsterisk
-                    defaultValue={undefined}
-                    label="Duration of event"
-                    placeholder="Select when the event took place"
-                    {...form.getInputProps("duration")}
-                />
-                <FileInput
-                    label="Supporting Documents"
-                    placeholder="Upload a document"
-                    description="Please only upload PDF files"
-                    {...form.getInputProps("document")}
-                />
-                <Textarea
-                    label="Award details (If applicable)"
-                    {...form.getInputProps("awardDetails")}
-                />
-                <Textarea
-                    label="Group member details (If applicable)"
-                    placeholder={`Please enter details in this format\nName, Admin number`}
-                    {...form.getInputProps("groupMembers")}
-                />
-                <Button type="submit">Submit</Button>
-            </Stack>
-        </form>
+        <Grid h={"100%"} p="md" gutter={"xl"}>
+            <Grid.Col sx={{ minHeight: "10%" }}>
+                <StudentInfoCard type="wide" />
+            </Grid.Col>
+
+            <Grid.Col sx={{ minHeight: "90%" }}>
+                <Paper h={"100%"} shadow="md" radius="lg" p="lg">
+                    <Title pb={"xl"}>Event/Award Details</Title>
+                    <form onSubmit={form.onSubmit(() => submitForm())}>
+                        <LoadingOverlay
+                            transitionDuration={150}
+                            visible={isSubmitting}
+                            overlayBlur={1}
+                        />
+                        <Group pb={30} grow sx={{ alignItems: "start" }}>
+                            <Stack spacing="lg">
+                                <TextInput
+                                    withAsterisk
+                                    label="Name of event"
+                                    placeholder="Enter the name of the event"
+                                    {...form.getInputProps("name")}
+                                />
+                                <Select
+                                    withAsterisk
+                                    label="Type of event"
+                                    placeholder="Select type of event"
+                                    data={[
+                                        { value: "Service", label: "Service" },
+                                        {
+                                            value: "Enrichment",
+                                            label: "Enrichment",
+                                        },
+                                        {
+                                            value: "Achievement",
+                                            label: "Achievement",
+                                        },
+                                        {
+                                            value: "Leadership",
+                                            label: "Leadership",
+                                        },
+                                    ]}
+                                    {...form.getInputProps("type")}
+                                />
+                                <TextInput
+                                    withAsterisk
+                                    label="Involvement"
+                                    placeholder="Enter your involvement in the event"
+                                    {...form.getInputProps("involvement")}
+                                />
+                                <DateRangePicker
+                                    withAsterisk
+                                    defaultValue={undefined}
+                                    label="Duration of event"
+                                    placeholder="Select when the event took place"
+                                    {...form.getInputProps("duration")}
+                                />
+                                <FileInput
+                                    label="Supporting Documents"
+                                    placeholder="Upload a document"
+                                    description="Please only upload PDF files"
+                                    {...form.getInputProps("document")}
+                                />
+                            </Stack>
+                            <Stack spacing="lg">
+                                <Textarea
+                                    label="Award details (If applicable)"
+                                    placeholder={`Please enter details of any awards you have received`}
+                                    minRows={5}
+                                    {...form.getInputProps("awardDetails")}
+                                />
+                                <Textarea
+                                    label="Group member details (If applicable)"
+                                    placeholder={`Please enter details in this format\nName, Admin number`}
+                                    minRows={8}
+                                    {...form.getInputProps("groupMembers")}
+                                />
+                            </Stack>
+                        </Group>
+                        <Stack>
+                            <Button type="submit">Submit</Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => navigate(-1)}>
+                                Cancel
+                            </Button>
+                        </Stack>
+                    </form>
+                </Paper>
+            </Grid.Col>
+        </Grid>
     )
 }
 
