@@ -32,8 +32,9 @@ export const handler = async (event) => {
 				headers: headers,
 				body: JSON.stringify({
 					message: "No Results found for this studentId and semester",
-					studentId: studentId,
-					semester: semester,
+					cgpa: 0,
+					totalCredits: 0,
+					totalGradedCredits: 0,
 				}),
 			}
 		}
