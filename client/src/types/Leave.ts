@@ -16,7 +16,7 @@ export interface LOARecord {
     graded_assignment: boolean
     additional_information?: string
     type: LeaveType.LOA
-    approved: boolean
+    status: "Approved" | "Rejected" | "Pending"
 }
 
 export interface MCRecord {
@@ -31,7 +31,7 @@ export interface MCRecord {
     clinic: string
     additional_information?: string
     type: LeaveType.MC
-    approved: boolean
+    status: "Approved" | "Rejected" | "Pending"
 }
 
 export interface LOARecordsAPI {

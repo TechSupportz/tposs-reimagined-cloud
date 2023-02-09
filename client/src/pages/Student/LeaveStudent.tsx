@@ -27,7 +27,7 @@ const LeaveStudent = () => {
         data: loaData,
         error: loaError,
         isLoading: loaIsLoading,
-    } = useSWR<LOARecordsAPI, Error>(loaUID, ([url, token]) =>
+    } = useSWR<LOARecordsAPI, Error>(user ? loaUID : null, ([url, token]) =>
         fetcher(url, token),
     )
 
@@ -35,7 +35,7 @@ const LeaveStudent = () => {
         data: mcData,
         error: mcError,
         isLoading: mcIsLoading,
-    } = useSWR<MCRecordsAPI, Error>(mcUID, ([url, token]) =>
+    } = useSWR<MCRecordsAPI, Error>(user ? mcUID : null, ([url, token]) =>
         fetcher(url, token),
     )
 
@@ -61,7 +61,7 @@ const LeaveStudent = () => {
                 ]}
                 records={loaData?.items.map(record => ({
                     Duration: record.duration.join(" - "),
-                    Status: record.approved ? "Approved" : "Pending",
+                    Status: record.status,
                     "Reason for Absence": record.reason,
                     Key: record.leave_id,
                 }))}
@@ -93,7 +93,7 @@ const LeaveStudent = () => {
                 ]}
                 records={mcData?.items.map(record => ({
                     Duration: record.duration.join(" - "),
-                    Status: record.approved ? "Approved" : "Pending",
+                    Status: record.status,
                     "MC Num": record.mc_number,
                     Clinic: record.clinic,
                     Key: record.leave_id,
