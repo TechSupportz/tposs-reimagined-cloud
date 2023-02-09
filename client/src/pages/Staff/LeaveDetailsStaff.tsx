@@ -15,6 +15,7 @@ import {
 import { DateRangePickerValue, DateRangePicker } from "@mantine/dates"
 import { useForm, matches, isNotEmpty } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
+import { Download } from "@styled-icons/material-rounded"
 import { DateTime } from "luxon"
 import React, { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
@@ -31,6 +32,7 @@ import {
     LOAReasons,
     MCReasons,
 } from "../../types/Leave"
+import { S3LinkAPI } from "../../types/S3"
 
 interface LeaveRequestForm {
     contactNumber: string
@@ -70,6 +72,16 @@ const LeaveDetailsStaff = () => {
         LOARecordAPI | MCRecordAPI,
         Error
     >(user ? uid : null, ([url, token]) => fetcher(url, token))
+
+    const S3LinkUid: Key = [
+        `${baseUrl}/S3/leave/${data?.record.attachment}`,
+        tokens.id_token,
+    ]
+
+    const { data: S3LinkData, error: S3LinkError } = useSWR<S3LinkAPI, Error>(
+        data ? S3LinkUid : null,
+        ([url, token]) => fetcher(url, token),
+    )
 
     useEffect(() => {
         form.setFieldValue("contactNumber", user?.phoneNumber!)
@@ -116,13 +128,114 @@ const LeaveDetailsStaff = () => {
         }
     }, [data])
 
+    const downloadDocument = () => {
+        if (S3LinkData) {
+            window.open(S3LinkData.url, "_blank")
+        } else {
+            showNotification({
+                title: "Download failed",
+                message:
+                    "Something went wrong with downloading your document. Please try again later.",
+            })
+        }
+    }
+
+    const approveRequest = async () => {
+        setIsSubmitting(true)
+        const url = `${baseUrl}/leave/approveRequest`
+
+        const body = JSON.stringify({
+            student_id: data?.record.student_id,
+            leave_id: data?.record.leave_id,
+        })
+
+        try {
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    Authorization: tokens.id_token?.toString() || "",
+                    "Content-Type": "application/json",
+                },
+                body,
+            })
+
+            if (response.status === 200) {
+                showNotification({
+                    title: "Request approved",
+                    color: "green",
+                    message: "The request has been approved successfully.",
+                })
+                const uid: Key = [
+                    `${baseUrl}/leave/requests/${user?.username}/${type}`,
+                    tokens.id_token,
+                ]
+                mutate(uid)
+                setIsSubmitting(false)
+                navigate("/staff/leave")
+            }
+        } catch (error) {
+            showNotification({
+                title: "Request approval failed",
+                message:
+                    "Something went wrong with approving the request. Please try again later.",
+            })
+            setIsSubmitting(false)
+
+            navigate("/staff/leave")
+        }
+    }
+
+    const rejectRequest = async () => {
+        setIsSubmitting(true)
+        const url = `${baseUrl}/leave/rejectRequest`
+
+        const body = JSON.stringify({
+            student_id: data?.record.student_id,
+            leave_id: data?.record.leave_id,
+        })
+
+        try {
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    Authorization: tokens.id_token?.toString() || "",
+                    "Content-Type": "application/json",
+                },
+                body,
+            })
+
+            if (response.status === 200) {
+                showNotification({
+                    title: "Request rejected",
+                    color: "green",
+                    message: "The request has been rejected successfully.",
+                })
+                const uid: Key = [
+                    `${baseUrl}/leave/requests/${user?.username}/${type}`,
+                    tokens.id_token,
+                ]
+                mutate(uid)
+                setIsSubmitting(false)
+                navigate("/staff/leave")
+            }
+        } catch (error) {
+            showNotification({
+                title: "Request rejection failed",
+                message:
+                    "Something went wrong with rejecting the request. Please try again later.",
+            })
+            setIsSubmitting(false)
+            navigate("/staff/leave")
+        }
+    }
+
     return (
         <Grid h={"100%"} p="md" gutter={"xl"}>
             <Grid.Col sx={{ minHeight: "10%" }}>
                 <StudentInfoCard
                     type="wide"
                     username={data?.record.student_id}
-					isDataLoading={isLoading}
+                    isDataLoading={isLoading}
                 />
             </Grid.Col>
 
@@ -199,7 +312,13 @@ const LeaveDetailsStaff = () => {
                                     <FileInput
                                         readOnly
                                         label="Supporting Documents"
-                                        placeholder="Upload a document"
+                                        icon={<Download size={24} />}
+                                        placeholder={
+                                            isLoading
+                                                ? "Loading..."
+                                                : data?.record.attachment
+                                        }
+                                        onClick={downloadDocument}
                                         description="Please only upload PDF files"
                                         {...form.getInputProps("document")}
                                     />
@@ -257,10 +376,12 @@ const LeaveDetailsStaff = () => {
                                 </Stack>
                             </Group>
                             <Stack mt={40}>
-                                <Button type="submit" color={"green.4"}>
+                                <Button
+                                    color={"green.4"}
+                                    onClick={approveRequest}>
                                     Approve
                                 </Button>
-                                <Button type="submit">Reject</Button>
+                                <Button onClick={rejectRequest}>Reject</Button>
                                 <Button
                                     variant="outline"
                                     onClick={() => navigate(-1)}>

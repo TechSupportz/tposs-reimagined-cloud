@@ -19,7 +19,7 @@ import {
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
 import { isNotEmpty, matches, useForm } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
-import { CalendarMonth } from "@styled-icons/material-rounded"
+import { CalendarMonth, Download } from "@styled-icons/material-rounded"
 import { useEffect, useState } from "react"
 import useSWR, { Key, mutate } from "swr"
 import { baseUrl, fetcher } from "../../app/services/api"
@@ -28,6 +28,7 @@ import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
+import { S3LinkAPI } from "../../types/S3"
 
 interface SealRequestForm {
     name: string
@@ -53,7 +54,7 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const {id} = useParams()
+    const { id } = useParams()
 
     const navigate = useNavigate()
 
@@ -82,13 +83,20 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
         },
     })
 
-    const uid: Key = [
-        `${baseUrl}/SEAL/${id}`,
-        tokens.id_token,
-    ]
+    const uid: Key = [`${baseUrl}/SEAL/${id}`, tokens.id_token]
 
     const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
         props.isReadOnly ? uid : null,
+        ([url, token]) => fetcher(url, token),
+    )
+
+    const S3LinkUid: Key = [
+        `${baseUrl}/S3/seal/${data?.record.attachment_key}`,
+        tokens.id_token,
+    ]
+
+    const { data: S3LinkData, error: S3LinkError } = useSWR<S3LinkAPI, Error>(
+        data && props.isReadOnly ? S3LinkUid : null,
         ([url, token]) => fetcher(url, token),
     )
 
@@ -121,15 +129,13 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
         let grpMemberList: GroupMember[] | [] = []
 
         if (form.values.groupMembers !== "") {
-            grpMemberList = form.values.groupMembers
-                .split("\n")
-                .map(member => {
-                    const memberSplit = member.split(",")
-                    return {
-                        name: memberSplit[0],
-                        admission_number: memberSplit[1].trim(),
-                    }
-                })
+            grpMemberList = form.values.groupMembers.split("\n").map(member => {
+                const memberSplit = member.split(",")
+                return {
+                    name: memberSplit[0],
+                    admission_number: memberSplit[1].trim(),
+                }
+            })
         }
 
         if (form.isValid()) {
@@ -228,6 +234,18 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
         }
     }
 
+    const downloadDocument = () => {
+        if (S3LinkData) {
+            window.open(S3LinkData.url, "_blank")
+        } else {
+            showNotification({
+                title: "Download failed",
+                message:
+                    "Something went wrong with downloading your document. Please try again later.",
+            })
+        }
+    }
+
     return (
         <Grid h={"100%"} p="md" gutter={"xl"}>
             <Grid.Col sx={{ minHeight: "10%" }}>
@@ -240,9 +258,9 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
                     <Skeleton visible={props.isReadOnly && isLoading}>
                         <form onSubmit={form.onSubmit(() => submitForm())}>
                             <LoadingOverlay
-                                loaderProps={{variant: "dots"}}
+                                loaderProps={{ variant: "dots" }}
                                 transitionDuration={150}
-                                visible={isSubmitting &&!props.isReadOnly}
+                                visible={isSubmitting && !props.isReadOnly}
                                 overlayBlur={1}
                             />
                             <Group pb={30} grow sx={{ alignItems: "start" }}>
@@ -297,7 +315,24 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
                                     <FileInput
                                         readOnly={props.isReadOnly}
                                         label="Supporting Document"
-                                        placeholder="Upload a document"
+                                        icon={
+                                            props.isReadOnly ? (
+                                                <Download size={24} />
+                                            ) : null
+                                        }
+                                        placeholder={
+                                            props.isReadOnly
+                                                ? isLoading
+                                                    ? "Loading..."
+                                                    : data?.record
+                                                          .attachment_key
+                                                : "Upload a document"
+                                        }
+                                        onClick={
+                                            props.isReadOnly
+                                                ? downloadDocument
+                                                : undefined
+                                        }
                                         description="Please only upload PDF files"
                                         {...form.getInputProps("document")}
                                     />

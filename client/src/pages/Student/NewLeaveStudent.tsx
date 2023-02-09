@@ -19,7 +19,7 @@ import {
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
 import { isNotEmpty, matches, useForm } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
-import { CalendarMonth } from "@styled-icons/material-rounded"
+import { CalendarMonth, Download } from "@styled-icons/material-rounded"
 import { useEffect, useState } from "react"
 import useSWR, { Key, mutate } from "swr"
 import { baseUrl, fetcher } from "../../app/services/api"
@@ -37,6 +37,7 @@ import {
     MCRecord,
     MCRecordAPI,
 } from "../../types/Leave"
+import { S3LinkAPI } from "../../types/S3"
 
 interface LeaveRequestForm {
     contactNumber: string
@@ -110,6 +111,16 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
         LOARecordAPI | MCRecordAPI,
         Error
     >(props.isReadOnly ? uid : null, ([url, token]) => fetcher(url, token))
+
+    const S3LinkUid: Key = [
+        `${baseUrl}/S3/leave/${data?.record.attachment}`,
+        tokens.id_token,
+    ]
+
+    const { data: S3LinkData, error: S3LinkError } = useSWR<S3LinkAPI, Error>(
+        data && props.isReadOnly ? S3LinkUid : null,
+        ([url, token]) => fetcher(url, token),
+    )
 
     useEffect(() => {
         form.setFieldValue("contactNumber", user?.phoneNumber!)
@@ -277,6 +288,18 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
         }
     }
 
+    const downloadDocument = () => {
+        if (S3LinkData) {
+            window.open(S3LinkData.url, "_blank")
+        } else {
+            showNotification({
+                title: "Download failed",
+                message:
+                    "Something went wrong with downloading your document. Please try again later.",
+            })
+        }
+    }
+
     return (
         <Grid h={"100%"} p="md" gutter={"xl"}>
             <Grid.Col sx={{ minHeight: "10%" }}>
@@ -356,7 +379,23 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     <FileInput
                                         readOnly={props.isReadOnly}
                                         label="Supporting Documents"
-                                        placeholder="Upload a document"
+                                        icon={
+                                            props.isReadOnly ? (
+                                                <Download size={24} />
+                                            ) : null
+                                        }
+                                        placeholder={
+                                            props.isReadOnly
+                                                ? isLoading
+                                                    ? "Loading..."
+                                                    : data?.record.attachment
+                                                : "Upload a document"
+                                        }
+                                        onClick={
+                                            props.isReadOnly
+                                                ? downloadDocument
+                                                : undefined
+                                        }
                                         description="Please only upload PDF files"
                                         {...form.getInputProps("document")}
                                     />

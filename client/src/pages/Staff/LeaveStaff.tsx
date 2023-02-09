@@ -69,10 +69,10 @@ const LeaveStaff = () => {
                 rowOnClick={row => {
                     navigate(`${row.Key}/LOA`)
                 }}
-                buttonLabel="Apply for LOA"
-                buttonOnClick={() => {
-                    navigate("new/LOA")
-                }}
+                // buttonLabel="Apply for LOA"
+                // buttonOnClick={() => {
+                //     navigate("new/LOA")
+                // }}
             />
             <TableCard
                 title="Medical Certificate (MC) Summary"
@@ -103,10 +103,10 @@ const LeaveStaff = () => {
                 rowOnClick={row => {
                     navigate(`${row.Key}/MC`)
                 }}
-                buttonLabel="Apply for MC"
-                buttonOnClick={() => {
-                    navigate("new/MC")
-                }}
+                // buttonLabel="Apply for MC"
+                // buttonOnClick={() => {
+                //     navigate("new/MC")
+                // }}
             />
         </Flex>
     )
