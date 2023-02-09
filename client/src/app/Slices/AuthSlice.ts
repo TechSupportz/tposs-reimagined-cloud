@@ -48,7 +48,8 @@ export const createAuthSlice: StateCreator<AuthSlice> = set => ({
 
     userInfo: null,
 
-    currentSemester: DateTime.now().month > 6 ? 2 : 1,
+    currentSemester:
+        DateTime.now().month >= 10 || DateTime.now().month <= 3 ? 2 : 1,
 
     setUser: (tokens: AuthTokens, user: StudentInfo | StaffInfo) => {
         set({

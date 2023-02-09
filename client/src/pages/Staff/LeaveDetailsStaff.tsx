@@ -393,12 +393,12 @@ const LeaveDetailsStaff = () => {
                             </Group>
                             <Stack mt={110}>
                                 <Group grow>
+                                    <Button onClick={rejectRequest}>Reject</Button>
                                     <Button
                                         color={"green.4"}
                                         onClick={approveRequest}>
                                         Approve
                                     </Button>
-                                    <Button onClick={rejectRequest}>Reject</Button>
                                 </Group>
                                 <Button
                                     variant="outline"
