@@ -4,25 +4,26 @@ import useAppStore from "../app/Store"
 import useSWR, { Key, Fetcher } from "swr"
 import { SEALPoint, SEALRecord, SEALRecordsAPI } from "../types/SEAL"
 import { DateTime } from "luxon"
+import { GradePointAverageAPI } from "../types/Results"
 
-const SEALInfoCard = () => {
+const ResultsInfoCard = () => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
 
-    const selectedType = useAppStore(state => state.selectedSEALType)
+    const selectedSemester = useAppStore(state => state.selectedSemester)
 
     const uid: Key = [
-        `${baseUrl}/SEAL/points/${user?.username}`,
+        `${baseUrl}/results/gpa/${user?.username}`,
         tokens.id_token,
     ]
 
-    const { data, error, isLoading } = useSWR<SEALPoint, Error>(
+    const { data, error, isLoading } = useSWR<GradePointAverageAPI, Error>(
         user && tokens ? uid : null,
         ([url, token]) => fetcher(url, token),
     )
 
     const selectedUID: Key = [
-        `${baseUrl}/SEAL/${user?.username}/${selectedType}`,
+        `${baseUrl}/results/gpa/${user?.username}/${selectedSemester}`,
         tokens.id_token,
     ]
 
@@ -30,70 +31,59 @@ const SEALInfoCard = () => {
         data: selectedData,
         error: selectedError,
         isLoading: selectedIsLoading,
-    } = useSWR<SEALRecordsAPI, Error>(
-        selectedType ? selectedUID : null,
+    } = useSWR<GradePointAverageAPI, Error>(
+        selectedSemester ? selectedUID : null,
         ([url, token]) => fetcher(url, token),
     )
-
-    const getRecentEvent = (events: SEALRecord[]) => {
-        if (events.length === 0) {
-            return "No events recorded"
-        }
-
-        const sortedEvents = events.sort((a, b) => {
-            const aDate = DateTime.fromISO(a.duration[1])
-            const bDate = DateTime.fromISO(b.duration[1])
-
-            return aDate.diff(bDate).milliseconds
-        })
-
-        return sortedEvents[0].name
-    }
 
     return (
         <Paper h={"100%"} shadow="md" radius="lg" p="lg">
             <Stack>
                 <Box>
                     <Title weight={800} size={16}>
-                        {`Total ${
-                            selectedType ? selectedType : "SEAL"
-                        } Points Earned:`}
+                        {selectedSemester
+                            ? `Total Credit Units (CU) of Semester ${selectedSemester}`
+                            : `Total Credit Units (CU) Earned:`}
                     </Title>
                     <Text size={20}>
                         {isLoading || selectedIsLoading ? (
                             <Skeleton height={31} width={"15%"} />
-                        ) : selectedType ? (
-                            selectedData?.totalPoints
+                        ) : selectedSemester ? (
+                            selectedData?.totalCredits
                         ) : (
-                            data?.points
+                            data?.totalCredits
                         )}
                     </Text>
                 </Box>
                 <Box>
                     <Title weight={800} size={16}>
-                        CCA Grade:
+                        {selectedSemester
+                            ? `Total Graded Credit Units (CU) of Semester ${selectedSemester}`
+                            : `Total Graded Credit Units (CU) Earned:`}
                     </Title>
                     <Text size={20}>
-                        {isLoading ? (
+                        {isLoading || selectedIsLoading ? (
                             <Skeleton height={31} width={"15%"} />
+                        ) : selectedSemester ? (
+                            selectedData?.totalGradedCredits
                         ) : (
-                            data?.grade
+                            data?.totalGradedCredits
                         )}
                     </Text>
                 </Box>
                 <Box>
                     <Title weight={800} size={16}>
-                        {selectedType
-                            ? `Most recent ${selectedType} event:`
-                            : "Most recent event:"}
+                        {selectedSemester
+                            ? `Grade Point Average (GPA) of ${selectedSemester}`
+                            : `Cumulative Grade Point Average (cGPA):`}
                     </Title>
                     <Text size={20}>
                         {isLoading || selectedIsLoading ? (
                             <Skeleton height={31} width={"15%"} />
-                        ) : selectedType ? (
-                            getRecentEvent(selectedData?.items!)
+                        ) : selectedSemester && selectedData ? (
+                            selectedData?.cgpa?.toFixed(2)
                         ) : (
-                            "Select a category to view"
+                            data?.cgpa.toFixed(2)
                         )}
                     </Text>
                 </Box>
@@ -102,4 +92,4 @@ const SEALInfoCard = () => {
     )
 }
 
-export default SEALInfoCard
+export default ResultsInfoCard

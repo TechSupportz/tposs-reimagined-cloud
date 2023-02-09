@@ -1,14 +1,21 @@
 import { StateCreator } from "zustand"
+import { SemesterType } from "../../types/Results"
 import { SEALPoint, SEALType } from "../../types/SEAL"
 
 export interface SEALTab {
-    selectedType: SEALType | undefined
-    setSelectedType: (type: SEALType | undefined) => void
+    selectedSEALType: SEALType | undefined
+    setSEALSelectedType: (type: SEALType | undefined) => void
+    selectedSemester: SemesterType | undefined
+    setSelectedSemester: (semester: SemesterType | undefined) => void
 }
 
 export const createSEALTabSlice: StateCreator<SEALTab> = set => ({
-    selectedType: undefined,
-    setSelectedType: (type: SEALType | undefined) => {
-        set({ selectedType: type })
+    selectedSEALType: undefined,
+    setSEALSelectedType: (type: SEALType | undefined) => {
+        set({ selectedSEALType: type })
+    },
+    selectedSemester: undefined,
+    setSelectedSemester: (semester: SemesterType | undefined) => {
+        set({ selectedSemester: semester })
     },
 })

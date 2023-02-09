@@ -30,8 +30,8 @@ const SEALTableCard = () => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
 
-    const selectedType = useAppStore(state => state.selectedType)
-    const setSelectedType = useAppStore(state => state.setSelectedType)
+    const selectedType = useAppStore(state => state.selectedSEALType)
+    const setSelectedType = useAppStore(state => state.setSEALSelectedType)
 
     const { classes } = useStyles()
 
@@ -97,7 +97,7 @@ const SEALTableCard = () => {
                                 { accessor: "Involvement" },
                                 { accessor: "Points Awarded" },
                             ]}
-                            records={data?.items.map((record) => ({
+                            records={data?.items.map(record => ({
                                 "Academic Year":
                                     record.duration[1].split("-")[0],
                                 Activity: record.name,
