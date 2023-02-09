@@ -444,7 +444,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     <Textarea
                                         readOnly={props.isReadOnly}
                                         label="Additional Information"
-                                        placeholder={`Please enter any other relevant information`}
+                                        placeholder={props.isReadOnly ? "" : `Please enter any other relevant information`}
                                         minRows={type === LeaveType.LOA ? 9 : 5}
                                         {...form.getInputProps(
                                             "additionalInfo",

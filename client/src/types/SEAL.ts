@@ -42,6 +42,11 @@ export interface SEALRecordsAPI {
     totalPoints: number
 }
 
+export interface SEALRequestsAPI {
+    message: string
+    items: SEALRecord[]
+}
+
 export interface SEALRecordAPI {
     message: string
     record: SEALRecord

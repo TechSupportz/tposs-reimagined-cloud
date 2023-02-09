@@ -356,7 +356,7 @@ const NewSealStudent = (props: { isReadOnly: boolean }) => {
                                     <Textarea
                                         readOnly={props.isReadOnly}
                                         label="Group member details (If applicable)"
-                                        placeholder={`Please enter details in this format\nName one, Admin number\nName two, Admin number`}
+                                        placeholder={props.isReadOnly ? "" : `Please enter details in this format\nName one, Admin number\nName two, Admin number`}
                                         minRows={8}
                                         {...form.getInputProps("groupMembers")}
                                     />

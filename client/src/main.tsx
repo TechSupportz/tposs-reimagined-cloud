@@ -9,6 +9,7 @@ import { SWRConfig } from "swr"
 import { TabStylesNames } from "@mantine/core/lib/Tabs/Tab/Tab"
 import { theme } from "./Theme"
 import { NotificationsProvider } from "@mantine/notifications"
+import { ModalsProvider } from "@mantine/modals"
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <SWRConfig
@@ -24,9 +25,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
             withCSSVariables
             theme={theme}>
             <NotificationsProvider position="bottom-right">
-                <BrowserRouter>
-                    <App />
-                </BrowserRouter>
+                <ModalsProvider>
+                    <BrowserRouter>
+                        <App />
+                    </BrowserRouter>
+                </ModalsProvider>
             </NotificationsProvider>
         </MantineProvider>
     </SWRConfig>,

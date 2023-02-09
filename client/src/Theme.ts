@@ -98,6 +98,11 @@ export const theme: MantineThemeOverride = {
                 size: "md",
             },
         },
+        NumberInput: {
+            defaultProps: {
+                size: "md",
+            }
+        },
         FileInput: {
             defaultProps: {
                 size: "md",

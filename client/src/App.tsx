@@ -12,6 +12,7 @@ import Redirect from "./pages/Redirect"
 import HomeStaff from "./pages/Staff/HomeStaff"
 import LeaveDetailsStaff from "./pages/Staff/LeaveDetailsStaff"
 import LeaveStaff from "./pages/Staff/LeaveStaff"
+import SealDetailsStaff from "./pages/Staff/SealDetailsStaff"
 import SealStaff from "./pages/Staff/SealStaff"
 import StaffRoute from "./pages/StaffRoute"
 import CalculatorStudent from "./pages/Student/CalculatorStudent"
@@ -71,6 +72,7 @@ const App = () => {
                     <Route path="leave" element={<LeaveStaff />} />
                     <Route path="leave/:id/:type" element={<LeaveDetailsStaff />} />
                     <Route path="seal" element={<SealStaff />} />
+                    <Route path="seal/:id" element={<SealDetailsStaff isReadOnly />} />
                 </Route>
                 <Route path="/student" element={<StudentRoute role={role} />}>
                     <Route path="home" element={<HomeStudent />} />

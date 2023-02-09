@@ -11,9 +11,11 @@ import {
     FileInput,
     Textarea,
     Button,
+    Text,
 } from "@mantine/core"
 import { DateRangePickerValue, DateRangePicker } from "@mantine/dates"
 import { useForm, matches, isNotEmpty } from "@mantine/form"
+import { openConfirmModal } from "@mantine/modals"
 import { showNotification } from "@mantine/notifications"
 import { Download } from "@styled-icons/material-rounded"
 import { DateTime } from "luxon"
@@ -186,47 +188,62 @@ const LeaveDetailsStaff = () => {
     }
 
     const rejectRequest = async () => {
-        setIsSubmitting(true)
-        const url = `${baseUrl}/leave/rejectRequest`
+        openConfirmModal({
+            title: "Reject request",
+            centered: true,
+            children: (
+                <Text>
+                    Are you sure you want to reject this {type} request? This
+                    action is irreversible.
+                </Text>
+            ),
+            labels: { confirm: "Reject request", cancel: "Cancel" },
+            onCancel: () => {},
+            onConfirm: async () => {
+                setIsSubmitting(true)
+                const url = `${baseUrl}/leave/rejectRequest`
 
-        const body = JSON.stringify({
-            student_id: data?.record.student_id,
-            leave_id: data?.record.leave_id,
-        })
-
-        try {
-            const response = await fetch(url, {
-                method: "PUT",
-                headers: {
-                    Authorization: tokens.id_token?.toString() || "",
-                    "Content-Type": "application/json",
-                },
-                body,
-            })
-
-            if (response.status === 200) {
-                showNotification({
-                    title: "Request rejected",
-                    color: "green",
-                    message: "The request has been rejected successfully.",
+                const body = JSON.stringify({
+                    student_id: data?.record.student_id,
+                    leave_id: data?.record.leave_id,
                 })
-                const uid: Key = [
-                    `${baseUrl}/leave/requests/${user?.username}/${type}`,
-                    tokens.id_token,
-                ]
-                mutate(uid)
-                setIsSubmitting(false)
-                navigate("/staff/leave")
-            }
-        } catch (error) {
-            showNotification({
-                title: "Request rejection failed",
-                message:
-                    "Something went wrong with rejecting the request. Please try again later.",
-            })
-            setIsSubmitting(false)
-            navigate("/staff/leave")
-        }
+
+                try {
+                    const response = await fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            Authorization: tokens.id_token?.toString() || "",
+                            "Content-Type": "application/json",
+                        },
+                        body,
+                    })
+
+                    if (response.status === 200) {
+                        showNotification({
+                            title: "Request rejected",
+                            color: "green",
+                            message:
+                                "The request has been rejected successfully.",
+                        })
+                        const uid: Key = [
+                            `${baseUrl}/leave/requests/${user?.username}/${type}`,
+                            tokens.id_token,
+                        ]
+                        mutate(uid)
+                        setIsSubmitting(false)
+                        navigate("/staff/leave")
+                    }
+                } catch (error) {
+                    showNotification({
+                        title: "Request rejection failed",
+                        message:
+                            "Something went wrong with rejecting the request. Please try again later.",
+                    })
+                    setIsSubmitting(false)
+                    navigate("/staff/leave")
+                }
+            },
+        })
     }
 
     return (
@@ -367,7 +384,6 @@ const LeaveDetailsStaff = () => {
                                     <Textarea
                                         readOnly
                                         label="Additional Information"
-                                        placeholder={`Please enter any other relevant information`}
                                         minRows={type === LeaveType.LOA ? 9 : 5}
                                         {...form.getInputProps(
                                             "additionalInfo",
@@ -375,13 +391,15 @@ const LeaveDetailsStaff = () => {
                                     />
                                 </Stack>
                             </Group>
-                            <Stack mt={40}>
-                                <Button
-                                    color={"green.4"}
-                                    onClick={approveRequest}>
-                                    Approve
-                                </Button>
-                                <Button onClick={rejectRequest}>Reject</Button>
+                            <Stack mt={110}>
+                                <Group grow>
+                                    <Button
+                                        color={"green.4"}
+                                        onClick={approveRequest}>
+                                        Approve
+                                    </Button>
+                                    <Button onClick={rejectRequest}>Reject</Button>
+                                </Group>
                                 <Button
                                     variant="outline"
                                     onClick={() => navigate(-1)}>
