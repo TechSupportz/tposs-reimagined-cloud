@@ -106,9 +106,9 @@ Ensure this is commented out when deploying to AWS
 */
 
 // console.log("Running locally")
-handler({
-	body: `{
-		"student_id": "2101530J",
-		"leave_id": "VEcQtjZnC7"
-}`,
-})
+// handler({
+// 	body: `{
+// 		"student_id": "2101530J",
+// 		"leave_id": "VEcQtjZnC7"
+// }`,
+// })
