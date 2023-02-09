@@ -29,7 +29,7 @@ export interface MCRecord {
     attachment: string
     mc_number: string
     clinic: string
-    additional_Info?: string
+    additional_information?: string
     type: LeaveType.MC
     approved: boolean
 }

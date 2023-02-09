@@ -28,7 +28,15 @@ import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
 import { DateTime } from "luxon"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
-import { LeaveType, LOAReasons, MCReasons } from "../../types/Leave"
+import {
+    LeaveType,
+    LOAReasons,
+    LOARecord,
+    LOARecordAPI,
+    MCReasons,
+    MCRecord,
+    MCRecordAPI,
+} from "../../types/Leave"
 
 interface LeaveRequestForm {
     contactNumber: string
@@ -50,7 +58,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
     const [isSubmitting, setIsSubmitting] = useState(props.isReadOnly)
-    const { type } = useParams() as { type: LeaveType }
+    const { id, type } = useParams()
 
     const navigate = useNavigate()
 
@@ -96,15 +104,12 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
         },
     })
 
-    // const uid: Key = [
-    //     `${baseUrl}/SEAL/${id}`,
-    //     tokens.id_token,
-    // ]
+    const uid: Key = [`${baseUrl}/leave/${id}`, tokens.id_token]
 
-    // const { data, error, isLoading } = useSWR<SEALRecordAPI, Error>(
-    //     props.isReadOnly ? uid : null,
-    //     ([url, token]) => fetcher(url, token),
-    // )
+    const { data, error, isLoading } = useSWR<
+        LOARecordAPI | MCRecordAPI,
+        Error
+    >(props.isReadOnly ? uid : null, ([url, token]) => fetcher(url, token))
 
     useEffect(() => {
         form.setFieldValue("contactNumber", user?.phoneNumber!)
@@ -116,28 +121,41 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
         }
     }, [type])
 
-    // useEffect(() => {
-    //     if (data) {
-    //         const sealRecord: SEALRecord = data.record
+    useEffect(() => {
+        if (data) {
+            if (type === LeaveType.LOA) {
+                const loaRecord = data.record as LOARecord
 
-    //         form.setValues({
-    //             name: sealRecord.name,
-    //             type: sealRecord.type,
-    //             duration: sealRecord.duration?.map(date => {
-    //                 return DateTime.fromISO(date).toJSDate()
-    //             }) as DateRangePickerValue,
-    //             document: null,
-    //             involvement: sealRecord.involvement,
-    //             awardDetails: sealRecord.award_details,
-    //             additionalInfo: sealRecord.members
-    //                 .map(member => {
-    //                     return `${member.name}, ${member.admission_number}`
-    //                 })
-    //                 .join("\n"),
-    //         })
-    //         setIsSubmitting(false)
-    //     }
-    // }, [data])
+                form.setValues({
+                    contactNumber: loaRecord.contact_number,
+                    reason: loaRecord.reason,
+                    duration: loaRecord.duration.map(date => {
+                        return DateTime.fromISO(date).toJSDate()
+                    }) as DateRangePickerValue,
+                    document: null,
+                    additionalInfo: loaRecord.additional_information,
+                    gradedAssignment: loaRecord.graded_assignment
+                        ? "true"
+                        : "false",
+                })
+            } else {
+                const mcRecord = data.record as MCRecord
+
+                form.setValues({
+                    contactNumber: mcRecord.contact_number,
+                    reason: mcRecord.reason,
+                    duration: mcRecord.duration.map(date => {
+                        return DateTime.fromISO(date).toJSDate()
+                    }) as DateRangePickerValue,
+                    document: null,
+                    additionalInfo: mcRecord.additional_information,
+                    mcNumber: mcRecord.mc_number,
+                    clinicName: mcRecord.clinic,
+                })
+            }
+            setIsSubmitting(false)
+        }
+    }, [data])
 
     const submitForm = async () => {
         form.validate()
@@ -267,8 +285,12 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
 
             <Grid.Col sx={{ minHeight: "90%" }}>
                 <Paper h={"100%"} shadow="md" radius="lg" p="lg">
-                    <Title pb={"xl"}>Event/Award Details</Title>
-                    <Skeleton visible={false}>
+                    <Title pb={"xl"}>
+                        {type === LeaveType.LOA
+                            ? "Leave of Absence (LOA) Details"
+                            : "Medical Certificate (MC) Details"}
+                    </Title>
+                    <Skeleton visible={props.isReadOnly && isLoading}>
                         <form onSubmit={form.onSubmit(() => submitForm())}>
                             <LoadingOverlay
                                 loaderProps={{ variant: "dots" }}
@@ -391,7 +413,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     />
                                 </Stack>
                             </Group>
-                            <Stack>
+                            <Stack mt={props.isReadOnly ? 150 : 100}>
                                 <Button
                                     display={props.isReadOnly ? "none" : ""}
                                     type="submit">
