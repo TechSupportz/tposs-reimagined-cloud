@@ -13,6 +13,7 @@ import {
     SemesterType,
 } from "../types/Results"
 import { SEALType } from "../types/SEAL"
+import { SubjectBySemesterAPI } from "../types/Subjects"
 
 const ResultsTableCard = () => {
     const navigate = useNavigate()
@@ -32,12 +33,14 @@ const ResultsTableCard = () => {
     }, [])
 
     const uid: Key = [
-        `${baseUrl}/results/${user?.username}/${selectedSemester}`,
+        `${baseUrl}/subjects/${
+            user ? "course" in user && user.course : null
+        }/20${user?.username.slice(0, 2)}/${selectedSemester}`,
         tokens.id_token,
     ]
 
-    const { data, error, isLoading } = useSWR<ResultsAPI, Error>(
-        selectedSemester ? uid : null,
+    const { data, error, isLoading } = useSWR<SubjectBySemesterAPI, Error>(
+        selectedSemester && user ? uid : null,
         ([url, token]) => fetcher(url, token),
     )
 
@@ -81,7 +84,7 @@ const ResultsTableCard = () => {
                             textSelectionDisabled
                             emptyState={
                                 data?.message ===
-                                "No Results found for this studentId and semester" ? (
+                                "No Subjects found for this course, cohort and semester combination" ? (
                                     <Stack align="center" spacing="xs">
                                         <ContentPaste
                                             size={40}
@@ -99,17 +102,15 @@ const ResultsTableCard = () => {
                                 { accessor: "Subject Code", width: "15%" },
                                 { accessor: "Subject Name", width: "60%" },
                                 { accessor: "Credit Units", width: "10%" },
-                                { accessor: "Grade" },
                             ]}
                             records={
                                 data?.message !==
-                                "No Results found for this studentId and semester"
-                                    ? data?.items.results.map(record => ({
-                                          "Subject Code": record.subject_code,
-                                          "Subject Name": record.subject_name,
-                                          "Credit Units": record.credit_units,
-                                          Grade: record.grade,
-                                          Key: record.subject_code,
+                                "No Subjects found for this course, cohort and semester combination"
+                                    ? data?.items.subjects.map(subject => ({
+                                          "Subject Code": subject.subject_code,
+                                          "Subject Name": subject.subject_name,
+                                          "Credit Units": subject.credit_units,
+                                          Key: subject.subject_code,
                                       }))
                                     : []
                             }

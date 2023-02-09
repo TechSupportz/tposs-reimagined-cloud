@@ -71,7 +71,7 @@ export const handler = async (event) => {
 					headers: headers,
 					body: JSON.stringify({
 						message: `Successfully retrieved semester ${semester} subjects for ${cohort} cohort`,
-						subjects: filteredBySemester,
+						items: filteredBySemester[0],
 					}),
 				}
 			}
@@ -81,7 +81,7 @@ export const handler = async (event) => {
 				headers: headers,
 				body: JSON.stringify({
 					message: `Successfully retrieved subjects for ${cohort} cohort`,
-					subjects: filteredData,
+					items: filteredData,
 				}),
 			}
 		}
@@ -92,7 +92,7 @@ export const handler = async (event) => {
 			headers: headers,
 			body: JSON.stringify({
 				message: "Successfully retrieved subjects",
-				subjects: data.Items,
+				items: data.Items,
 			}),
 		}
 	} catch (err) {
