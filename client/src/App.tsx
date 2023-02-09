@@ -10,6 +10,7 @@ import Forbidden from "./pages/Forbidden"
 import NotFound from "./pages/NotFound"
 import Redirect from "./pages/Redirect"
 import HomeStaff from "./pages/Staff/HomeStaff"
+import LeaveDetailsStaff from "./pages/Staff/LeaveDetailsStaff"
 import LeaveStaff from "./pages/Staff/LeaveStaff"
 import SealStaff from "./pages/Staff/SealStaff"
 import StaffRoute from "./pages/StaffRoute"
@@ -68,6 +69,7 @@ const App = () => {
                 <Route path="/staff" element={<StaffRoute role={role} />}>
                     <Route path="home" element={<HomeStaff />} />
                     <Route path="leave" element={<LeaveStaff />} />
+                    <Route path="leave/:id/:type" element={<LeaveDetailsStaff />} />
                     <Route path="seal" element={<SealStaff />} />
                 </Route>
                 <Route path="/student" element={<StudentRoute role={role} />}>

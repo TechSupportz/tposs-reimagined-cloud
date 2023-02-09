@@ -1,41 +1,35 @@
 import {
-    FileInput,
-    Input,
-    Select,
-    Stack,
-    Textarea,
-    TextInput,
-    Button,
-    LoadingOverlay,
-    Box,
-    Paper,
-    Flex,
-    Group,
     Grid,
+    Paper,
     Title,
-    Tooltip,
     Skeleton,
+    LoadingOverlay,
+    Group,
+    Stack,
+    TextInput,
+    Select,
+    FileInput,
+    Textarea,
+    Button,
 } from "@mantine/core"
-import { DateRangePicker, DateRangePickerValue } from "@mantine/dates"
-import { isNotEmpty, matches, useForm } from "@mantine/form"
+import { DateRangePickerValue, DateRangePicker } from "@mantine/dates"
+import { useForm, matches, isNotEmpty } from "@mantine/form"
 import { showNotification } from "@mantine/notifications"
-import { CalendarMonth } from "@styled-icons/material-rounded"
-import { useEffect, useState } from "react"
-import useSWR, { Key, mutate } from "swr"
+import { DateTime } from "luxon"
+import React, { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import useSWR, { mutate, Key } from "swr"
 import { baseUrl, fetcher } from "../../app/services/api"
 import useAppStore from "../../app/Store"
-import { SEALRecord, SEALRecordAPI, SEALType } from "../../types/SEAL"
-import { DateTime } from "luxon"
-import { useLocation, useNavigate, useParams } from "react-router-dom"
 import StudentInfoCard from "../../components/StudentInfoCard"
 import {
     LeaveType,
-    LOAReasons,
-    LOARecord,
     LOARecordAPI,
-    MCReasons,
-    MCRecord,
     MCRecordAPI,
+    LOARecord,
+    MCRecord,
+    LOAReasons,
+    MCReasons,
 } from "../../types/Leave"
 
 interface LeaveRequestForm {
@@ -49,12 +43,7 @@ interface LeaveRequestForm {
     clinicName: string
 }
 
-interface S3UploadLink {
-    url: string
-    key: string
-}
-
-const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
+const LeaveDetailsStaff = () => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -73,35 +62,6 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
             mcNumber: "",
             clinicName: "",
         },
-        validateInputOnBlur: !props.isReadOnly,
-        validateInputOnChange: false,
-        validate: {
-            contactNumber: matches(
-                /\+65(6|8|9)\d{7}/g,
-                "Please enter a valid Singapore contact number",
-            ),
-            reason: isNotEmpty("Please select a reason"),
-            duration: isNotEmpty("Please select a duration"),
-            document: isNotEmpty("Please upload a document"),
-            mcNumber: value =>
-                type === LeaveType.MC && value.length === 0
-                    ? "Please enter your MC Number"
-                    : null,
-            clinicName: value =>
-                type === LeaveType.MC && value.length === 0
-                    ? "Please enter the name of the clinic"
-                    : null,
-            additionalInfo: (value, values) =>
-                values.reason === "Others" &&
-                value.length === 0 &&
-                values.gradedAssignment === "true"
-                    ? "Please specify your reason for LOA and the name of the subject which is affected"
-                    : values.reason === "Others" && value.length === 0
-                    ? "Please specify your reason for LOA"
-                    : values.gradedAssignment === "true" && value.length === 0
-                    ? "Please specify the name of the subject which is affected"
-                    : null,
-        },
     })
 
     const uid: Key = [`${baseUrl}/leave/${id}`, tokens.id_token]
@@ -109,7 +69,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
     const { data, error, isLoading } = useSWR<
         LOARecordAPI | MCRecordAPI,
         Error
-    >(props.isReadOnly ? uid : null, ([url, token]) => fetcher(url, token))
+    >(user ? uid : null, ([url, token]) => fetcher(url, token))
 
     useEffect(() => {
         form.setFieldValue("contactNumber", user?.phoneNumber!)
@@ -153,134 +113,17 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                     clinicName: mcRecord.clinic,
                 })
             }
-            setIsSubmitting(false)
         }
     }, [data])
-
-    const submitForm = async () => {
-        form.validate()
-
-        if (form.isValid()) {
-            setIsSubmitting(true)
-            const fileKey = await uploadDocument(form.values.document!)
-            console.log(fileKey)
-            postNewLeaveRequest(fileKey!)
-        } else {
-            console.log("Form is invalid")
-        }
-    }
-
-    const postNewLeaveRequest = async (fileKey: string) => {
-        let body: string
-
-        if (type === LeaveType.LOA) {
-            const gradedAssignment = form.values.gradedAssignment === "true"
-
-            body = JSON.stringify({
-                student_id: user?.username,
-                staff_id: "carePersonId" in user! && user.carePersonId,
-                type: type,
-                reason: form.values.reason,
-                duration: form.values.duration?.map(date => {
-                    return DateTime.fromJSDate(date!).toISODate()
-                }),
-                additional_information: form.values.additionalInfo,
-                attachment: fileKey,
-                contact_number: form.values.contactNumber,
-                graded_assignment: gradedAssignment,
-            })
-        } else {
-            body = JSON.stringify({
-                student_id: user?.username,
-                staff_id: "carePersonId" in user! && user.carePersonId,
-                type: type,
-                reason: form.values.reason,
-                duration: form.values.duration?.map(date => {
-                    return DateTime.fromJSDate(date!).toISODate()
-                }),
-                additional_information: form.values.additionalInfo,
-                attachment: fileKey,
-                contact_number: form.values.contactNumber,
-                mc_number: form.values.mcNumber,
-                clinic: form.values.clinicName,
-            })
-        }
-
-        console.log(body)
-
-        const url = `${baseUrl}/leave/newRequest`
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    Authorization: tokens.id_token?.toString() || "",
-                    "Content-Type": "application/json",
-                },
-                body,
-            })
-
-            if (response.status === 200) {
-                showNotification({
-                    title: "Success",
-                    color: "green",
-                    message: "Your request has been submitted.",
-                })
-                const uid: Key = [
-                    `${baseUrl}/leave/${user?.username}/${type}`,
-                    tokens.id_token,
-                ]
-                mutate(uid)
-                setIsSubmitting(false)
-                navigate("/student/leave")
-            }
-        } catch (error) {
-            console.error(error)
-            showNotification({
-                title: "Submission failed",
-                message:
-                    "Something went wrong while submitting your request. Please try again later.",
-            })
-        }
-    }
-
-    const uploadDocument = async (file: File) => {
-        const url = `${baseUrl}/leave/uploadLink/${user?.username}`
-
-        const s3Response = await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: tokens.id_token?.toString() || "",
-                "Content-Type": "application/json",
-            },
-        })
-
-        const s3UploadLink = (await s3Response.json()) as S3UploadLink
-
-        try {
-            const uploadResponse = await fetch(s3UploadLink.url, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-                body: file,
-            })
-
-            if (uploadResponse.status === 200) return s3UploadLink.key
-        } catch (error) {
-            console.error(error)
-            showNotification({
-                title: "Upload failed",
-                message:
-                    "Something went wrong while uploading your document. Please try again later.",
-            })
-        }
-    }
 
     return (
         <Grid h={"100%"} p="md" gutter={"xl"}>
             <Grid.Col sx={{ minHeight: "10%" }}>
-                <StudentInfoCard type="wide" />
+                <StudentInfoCard
+                    type="wide"
+                    username={data?.record.student_id}
+					isDataLoading={isLoading}
+                />
             </Grid.Col>
 
             <Grid.Col sx={{ minHeight: "90%" }}>
@@ -290,26 +133,26 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                             ? "Leave of Absence (LOA) Details"
                             : "Medical Certificate (MC) Details"}
                     </Title>
-                    <Skeleton visible={props.isReadOnly && isLoading}>
-                        <form onSubmit={form.onSubmit(() => submitForm())}>
+                    <Skeleton visible={isLoading}>
+                        <form>
                             <LoadingOverlay
                                 loaderProps={{ variant: "dots" }}
                                 transitionDuration={150}
-                                visible={isSubmitting && !props.isReadOnly}
+                                visible={isSubmitting}
                                 overlayBlur={1}
                             />
                             <Group pb={30} grow sx={{ alignItems: "start" }}>
                                 <Stack spacing="lg">
                                     <TextInput
                                         withAsterisk
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         label="Contact number"
                                         placeholder="Enter your contact number"
                                         {...form.getInputProps("contactNumber")}
                                     />
                                     <Select
                                         withAsterisk
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         label={`Reason for ${type}`}
                                         placeholder="Select a reason"
                                         data={
@@ -347,14 +190,14 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     />
                                     <DateRangePicker
                                         withAsterisk
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         defaultValue={undefined}
                                         label={`Duration of ${type}`}
                                         placeholder="Select a date range"
                                         {...form.getInputProps("duration")}
                                     />
                                     <FileInput
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         label="Supporting Documents"
                                         placeholder="Upload a document"
                                         description="Please only upload PDF files"
@@ -367,7 +210,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                             type === LeaveType.LOA ? "" : "none"
                                         }
                                         withAsterisk
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         label="Graded Assignment"
                                         placeholder="Select if you have a graded assignment during this period"
                                         data={[
@@ -403,7 +246,7 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     />
 
                                     <Textarea
-                                        readOnly={props.isReadOnly}
+                                        readOnly
                                         label="Additional Information"
                                         placeholder={`Please enter any other relevant information`}
                                         minRows={type === LeaveType.LOA ? 9 : 5}
@@ -413,16 +256,15 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
                                     />
                                 </Stack>
                             </Group>
-                            <Stack mt={props.isReadOnly ? 150 : 100}>
-                                <Button
-                                    display={props.isReadOnly ? "none" : ""}
-                                    type="submit">
-                                    Submit
+                            <Stack mt={40}>
+                                <Button type="submit" color={"green.4"}>
+                                    Approve
                                 </Button>
+                                <Button type="submit">Reject</Button>
                                 <Button
                                     variant="outline"
                                     onClick={() => navigate(-1)}>
-                                    {props.isReadOnly ? "Back" : "Cancel"}
+                                    Back
                                 </Button>
                             </Stack>
                         </form>
@@ -433,4 +275,4 @@ const NewLeaveStudent = (props: { isReadOnly: boolean }) => {
     )
 }
 
-export default NewLeaveStudent
+export default LeaveDetailsStaff

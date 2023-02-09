@@ -52,7 +52,7 @@ interface S3UploadLink {
 const NewSealStudent = (props: { isReadOnly: boolean }) => {
     const tokens = useAppStore(state => state.tokens)
     const user = useAppStore(state => state.userInfo)
-    const [isSubmitting, setIsSubmitting] = useState(props.isReadOnly)
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const {id} = useParams()
 
     const navigate = useNavigate()
