@@ -28,15 +28,26 @@ export const handler = async (event) => {
 
         if (user) {
             return {
-                statusCode: 200,
-                headers: headers,
-                body: JSON.stringify({
-                    username: user.Username,
-                    name: user.Attributes.find((attribute) => attribute.Name === "name").Value,
-                    email: user.Attributes.find((attribute) => attribute.Name === "email").Value,
-                    phone_number: user.Attributes.find((attribute) => attribute.Name === "phone_number").Value,
-                }),
-            }
+				statusCode: 200,
+				headers: headers,
+				body: JSON.stringify({
+					username: user.Username,
+					name: user.Attributes.find((attribute) => attribute.Name === "name").Value,
+					email: user.Attributes.find((attribute) => attribute.Name === "email").Value,
+					phone_number: user.Attributes.find(
+						(attribute) => attribute.Name === "phone_number"
+					).Value,
+					year: !isStaff
+						? user.Attributes.find((attribute) => attribute.Name === "custom:year")
+								.Value
+						: -1,
+					course: !isStaff
+						? user.Attributes.find((attribute) => attribute.Name === "custom:course")
+								.Value
+						: user.Attributes.find((attribute) => attribute.Name === "custom:school")
+								.Value,
+				}),
+			}
         } else {
             return {
                 statusCode: 404,
@@ -70,6 +81,6 @@ const checkIfStaff = async (username) => {
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		username: "FT12345A",
+// 		username: "2101530J",
 // 	},
-// })
+// }).then((res) => console.log(res.body))
