@@ -155,18 +155,14 @@ const HomeStudent = () => {
                     </Box>
                     <Box>
                         <Title size={"h2"}>SEAL Points</Title>
-                        <Flex
-                            w={"13%"}
-                            align="center"
-                            justify={"space-between"}>
-                            <Text size={24}>
-                                {SEALisLoading ? (
-                                    <Skeleton height={37} width={"10ch"} />
-                                ) : (
-                                    SEALdata?.points
-                                )}
-                            </Text>
-                        </Flex>
+
+                        <Text size={24}>
+                            {SEALisLoading ? (
+                                <Skeleton height={37} width={"10ch"} />
+                            ) : (
+                                SEALdata?.points
+                            )}
+                        </Text>
                     </Box>
                 </Stack>
             </Paper>
@@ -181,7 +177,6 @@ const HomeStudent = () => {
                             onClick={() => {
                                 navigate(item.link)
                             }}
-                            
                         />
                     ))}
                 </SimpleGrid>
