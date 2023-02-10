@@ -78,7 +78,6 @@ const ResultsTableCard = () => {
                             rowStyle={{ backgroundColor: "hsl(0, 100%, 97%)" }}
                             fetching={isLoading}
                             loaderVariant="dots"
-                            
                             textSelectionDisabled
                             emptyState={
                                 data?.message ===
@@ -89,7 +88,7 @@ const ResultsTableCard = () => {
                                             color="#f58a9b"
                                         />
                                         <Title color="brand.2" size="h4">
-                                            Results have not been released yet
+                                            No subjects found
                                         </Title>
                                     </Stack>
                                 ) : (
