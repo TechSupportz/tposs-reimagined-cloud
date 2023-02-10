@@ -1,111 +1,108 @@
-import axios from "axios"
-import React, { useEffect } from "react"
+import { AppShell, Text } from "@mantine/core"
+import { useEffect } from "react"
 
-export interface cognitoTokens {
-	access_token: string
-	expires_in: number
-	id_token: string
-	refresh_token: string
-	token_type: string
-}
+import { Link, Route, Routes, useLocation } from "react-router-dom"
+import useAppStore from "./app/Store"
+import AppBar from "./components/AppBar"
+import Nav from "./components/Nav"
+import Authenticate from "./pages/Authenticate"
+import Forbidden from "./pages/Forbidden"
+import NotFound from "./pages/NotFound"
+import Redirect from "./pages/Redirect"
+import HomeStaff from "./pages/Staff/HomeStaff"
+import LeaveDetailsStaff from "./pages/Staff/LeaveDetailsStaff"
+import LeaveStaff from "./pages/Staff/LeaveStaff"
+import SealDetailsStaff from "./pages/Staff/SealDetailsStaff"
+import SealStaff from "./pages/Staff/SealStaff"
+import StaffRoute from "./pages/StaffRoute"
+import CalculatorStudent from "./pages/Student/CalculatorStudent"
+import HomeStudent from "./pages/Student/HomeStudent"
+import LeaveStudent from "./pages/Student/LeaveStudent"
+import NewLeaveStudent from "./pages/Student/NewLeaveStudent"
+import NewSealStudent from "./pages/Student/NewSealStudent"
+import ResultsStudent from "./pages/Student/ResultsStudent"
+import SealStudent from "./pages/Student/SealStudent"
+import SubjectStudent from "./pages/Student/SubjectStudent"
+import StudentRoute from "./pages/StudentRoute"
+import { UserRole } from "./types/UserRole"
 
 const App = () => {
-	const [authCode, setAuthCode] = React.useState<string | null>(null)
-	const [tokens, setTokens] = React.useState<cognitoTokens | null>(null)
+    const location = useLocation()
 
-	useEffect(() => {
-		const url = window.location.href
+    const user = useAppStore(state => state.userInfo)
+    const setUser = useAppStore(state => state.setUser)
 
-		setAuthCode(url.split("code=")[1])
-	}, [])
+    const role = user?.role as UserRole
 
-	useEffect(() => {
-		if (authCode) {
-			console.log(authCode)
-			fetchTokens(authCode)
-		}
-	}, [authCode])
+    useEffect(() => {
+        if (!user && sessionStorage.getItem("userInfo")) {
+            const userInfo = JSON.parse(sessionStorage.getItem("userInfo")!)
+            const tokens = JSON.parse(sessionStorage.getItem("tokens")!)
+            setUser(tokens, userInfo)
+        }
+    }, [user])
 
-	const fetchTokens = async (authCode: string) => {
-		try {
-			const res = await fetch(
-				"https://tposs-reimagined.auth.us-east-1.amazoncognito.com/oauth2/token",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: new URLSearchParams({
-						grant_type: "authorization_code",
-						code: authCode,
-						client_id: "4iermftj0fjo513022qtg0n464",
-						redirect_uri: "https://main.d3cvr0pboc0tkg.amplifyapp.com/",
-						// redirect_uri: "http://localhost:3000",
-					}),
-					mode: "cors",
-				}
-			)
-			const data = await res.json()
-			console.log(data)
-			setTokens(data)
-		} catch (err) {
-			console.error(err)
-		}
-	}
+    console.log(role)
 
-	const copyToClipboard = (text: string) => {
-		navigator.clipboard.writeText(text)
-	}
-
-	return (
-		<>
-			<h1>TPOSS: Reimagined</h1>
-			<h2>JWT Tokens</h2>
-			<a href="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout?client_id=4iermftj0fjo513022qtg0n464&redirect_uri=https://main.d3cvr0pboc0tkg.amplifyapp.com/&response_type=code">
-				<button>Logout</button>
-			</a>
-
-			<div className="token">
-				<h3>ID Token (JWT for authorization)</h3>
-				{tokens ? (
-					<button onClick={() => copyToClipboard(tokens.id_token)}>Copy</button>
-				) : (
-					<></>
-				)}
-				<p>{tokens?.id_token}</p>
-			</div>
-
-			<div className="token">
-				<h3>Access Token</h3>
-				{tokens ? (
-					<button onClick={() => copyToClipboard(tokens.access_token)}>Copy</button>
-				) : (
-					<></>
-				)}
-				<p>{tokens?.access_token}</p>
-			</div>
-
-			<div className="token">
-				<h3>Refresh Token</h3>
-				{tokens ? (
-					<button onClick={() => copyToClipboard(tokens.refresh_token)}>Copy</button>
-				) : (
-					<></>
-				)}
-				<p>{tokens?.refresh_token}</p>
-			</div>
-
-			<div className="token">
-				<h3>Token Type</h3>
-				<p>{tokens?.token_type}</p>
-			</div>
-
-			<div className="token">
-				<h3>Expires In</h3>
-				<p>{tokens?.expires_in}</p>
-			</div>
-		</>
-	)
+    return (
+        <AppShell
+            hidden={
+                location.pathname === "/" ||
+                location.pathname === "/login" ||
+                location.pathname === "/logout"
+            }
+            navbar={<Nav type={role} />}
+            header={<AppBar />}>
+            <Routes>
+                <Route path="/" element={<Authenticate />} />
+                <Route
+                    path="/login"
+                    element={
+                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=http://localhost:3000/" />
+                    }
+                />
+                <Route
+                    path="/logout"
+                    element={
+                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout?client_id=4iermftj0fjo513022qtg0n464&logout_uri=https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" />
+                    }
+                />
+                <Route path="/staff" element={<StaffRoute role={role} />}>
+                    <Route path="home" element={<HomeStaff />} />
+                    <Route path="leave" element={<LeaveStaff />} />
+                    <Route path="leave/:id/:type" element={<LeaveDetailsStaff />} />
+                    <Route path="seal" element={<SealStaff />} />
+                    <Route path="seal/:id" element={<SealDetailsStaff isReadOnly />} />
+                </Route>
+                <Route path="/student" element={<StudentRoute role={role} />}>
+                    <Route path="home" element={<HomeStudent />} />
+                    <Route path="results" element={<ResultsStudent />} />
+                    <Route path="leave" element={<LeaveStudent />} />
+                    <Route
+                        path="leave/new/:type"
+                        element={<NewLeaveStudent isReadOnly={false} />}
+                    />
+                    <Route
+                        path="leave/:id/:type"
+                        element={<NewLeaveStudent isReadOnly />}
+                    />
+                    <Route path="seal" element={<SealStudent />} />
+                    <Route
+                        path="seal/new"
+                        element={<NewSealStudent isReadOnly={false} />}
+                    />
+                    <Route
+                        path="seal/:id"
+                        element={<NewSealStudent isReadOnly />}
+                    />
+                    <Route path="subject" element={<SubjectStudent />} />
+                    <Route path="calculator" element={<CalculatorStudent />} />
+                </Route>
+                <Route path="/forbidden" element={<Forbidden />} />
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+        </AppShell>
+    )
 }
 
 export default App

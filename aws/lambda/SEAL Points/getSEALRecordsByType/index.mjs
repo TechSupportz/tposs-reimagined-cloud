@@ -36,16 +36,19 @@ export const handler = async (event) => {
 	try {
 		const data = await ddbDocClient.send(executeStatementCommand)
 		const filteredData = await filterSEALRecords(data.Items, studentId)
+		const points = await calculatePoints(filteredData)
 
 		// console.log(data.Items)
 		// console.log(filteredData)
+		console.log(points)
 
 		return {
 			statusCode: 200,
 			headers: headers,
 			body: JSON.stringify({
-				message: "Successfully retrieved SEAL records",
+				message: `Successfully retrieved ${type} records`,
 				items: filteredData,
+				totalPoints: points,
 			}),
 		}
 	} catch (err) {
@@ -58,6 +61,16 @@ export const handler = async (event) => {
 			}),
 		}
 	}
+}
+
+const calculatePoints = async (data) => {
+	let totalPoints = 0
+
+	data.forEach((item) => {
+		totalPoints += item.points
+	})
+
+	return totalPoints
 }
 
 // Filter out records where the student isn't listed in the members array
@@ -88,7 +101,7 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	pathParameters: {
-// 		studentId: "2200000A",
+// 		studentId: "2101530J",
 // 		type: "Achievement",
 // 	},
 // })

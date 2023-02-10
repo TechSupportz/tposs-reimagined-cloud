@@ -8,11 +8,21 @@ const dynamodb = new DynamoDBClient({ region: REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(dynamodb)
 
 export const handler = async (event) => {
-	const staffId = event.pathParameters.staffId
+	const {staffId, type} = event.pathParameters
+
+	if (type !== "MC" && type !== "LOA") {
+		return {
+			statusCode: 400,
+			headers: headers,
+			body: JSON.stringify({
+				message: "Invalid Leave type provided. Please enter MC or LOA",
+			}),
+		}
+	}
 
 	const executeStatementCommand = new ExecuteStatementCommand({
-		Statement: `SELECT * FROM Leave WHERE staff_id = ? AND approved = ?`,
-		Parameters: [staffId, false],
+		Statement: `SELECT * FROM Leave WHERE staff_id = ? AND type = ? AND status = ?`,
+		Parameters: [staffId, type ,"Pending"],
 	})
 
 	try {
@@ -47,5 +57,6 @@ Ensure this is commented out when deploying to AWS
 // handler({
 // 	pathParameters: {
 // 		staffId: "FT12345A",
+// 		type: "MC"
 // 	},
 // })

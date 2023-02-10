@@ -19,11 +19,14 @@ export const handler = async (event) => {
 			student_id: body.student_id,
 			leave_id: body.leave_id,
 		},
-		ConditionExpression: `approved = :false`,
-		UpdateExpression: `SET approved = :true`,
+		ConditionExpression: `#status = :currentState`,
+		UpdateExpression: `SET #status = :newState`,
+		ExpressionAttributeNames: {
+			"#status": "status",
+		},
 		ExpressionAttributeValues: {
-			":true": true,
-			":false": false,
+			":currentState": "Pending",
+			":newState": "Approved",
 		},
 		ReturnValues: "ALL_NEW",
 	})
@@ -102,7 +105,7 @@ const sendEmailNotification = async (studentId, reason, type, duration) => {
 // console.log("Running locally")
 // handler({
 // 	body: `{
-//         "student_id": "2101530J",
-//   "leave_id": "L3TLOysik6"
+//     "student_id": "2101530B",
+//     "leave_id": "Y_bavW0gYz"
 // }`,
 // })

@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
-import { DynamoDBDocumentClient, DeleteCommand } from "@aws-sdk/lib-dynamodb"
+import { DynamoDBDocumentClient, UpdateCommand } from "@aws-sdk/lib-dynamodb"
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2"
 
 const REGION = "us-east-1"
@@ -13,21 +13,26 @@ const ses = new SESv2Client({ region: REGION })
 export const handler = async (event) => {
 	const body = JSON.parse(event.body)
 
-	const deleteCommand = new DeleteCommand({
+	const updateCommand = new UpdateCommand({
 		TableName: "Leave",
 		Key: {
 			student_id: body.student_id,
 			leave_id: body.leave_id,
 		},
-		ConditionExpression: `approved = :false`,
-		ExpressionAttributeValues: {
-			":false": false,
+		ConditionExpression: `#status = :currentState`,
+		UpdateExpression: `SET #status = :newState`,
+		ExpressionAttributeNames: {
+			"#status": "status",
 		},
-		ReturnValues: "ALL_OLD",
+		ExpressionAttributeValues: {
+			":currentState": "Pending",
+			":newState": "Rejected",
+		},
+		ReturnValues: "ALL_NEW",
 	})
 
 	try {
-		const data = await ddbDocClient.send(deleteCommand)
+		const data = await ddbDocClient.send(updateCommand)
 		await sendEmailNotification(
 			data.Attributes.student_id,
 			data.Attributes.reason,
@@ -103,7 +108,7 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	body: `{
-//   "leave_id": "F_uCVpfLTk",
-//   "student_id": "2101234B"
+// 		"student_id": "2101530J",
+// 		"leave_id": "VEcQtjZnC7"
 // }`,
 // })

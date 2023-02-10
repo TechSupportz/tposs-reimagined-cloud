@@ -35,7 +35,7 @@ export const handler = async (event) => {
 				contact_number: body.contact_number,
 				graded_assignment: body.graded_assignment,
 				assignment_information: body.assignment_information ?? undefined,
-				approved: false,
+				status: "Pending",
 			},
 		})
 	} else if (body.type == "MC") {
@@ -53,7 +53,7 @@ export const handler = async (event) => {
 				contact_number: body.contact_number,
 				mc_number: body.mc_number,
 				clinic: body.clinic,
-				approved: false,
+				status: "Pending",
 			},
 		})
 	}
@@ -144,7 +144,7 @@ Ensure this is commented out when deploying to AWS
 // console.log("Running locally")
 // handler({
 // 	body: `{
-//    "student_id":"2101530J",
+//    "student_id":"2101530B",
 //    "staff_id":"FT12345A",
 //    "type":"MC",
 //    "reason":"Sick",
@@ -156,6 +156,6 @@ Ensure this is commented out when deploying to AWS
 //    "attachment":"S3Key",
 //    "contact_number":"+6591234568",
 //    "mc_number":"2874790",
-//    "clinic":"The Other Doctor",
+//    "clinic":"The Other Doctor"
 // }`,
 // })
