@@ -51,7 +51,8 @@ const Authenticate = () => {
                         grant_type: "authorization_code",
                         code: authCode,
                         client_id: "4iermftj0fjo513022qtg0n464",
-                        redirect_uri: "http://localhost:3000/",
+                        redirect_uri:
+                            "https://main.d3cvr0pboc0tkg.amplifyapp.com/",
                     }),
                     // mode: "cors",
                 },

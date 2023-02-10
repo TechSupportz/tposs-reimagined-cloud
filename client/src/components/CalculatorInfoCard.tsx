@@ -52,7 +52,7 @@ const CalculatorInfoCard = () => {
 
     useEffect(() => {
         console.log(subjects)
-        if (subjects.length !== 0 && data) {
+        if (subjects.length !== 0 && data && CGPA !== 0) {
             let gradePoint = 0
             subjects.forEach(subject => {
                 gradePoint += parseGrade(subject.grade) * subject.credit_units
@@ -61,8 +61,8 @@ const CalculatorInfoCard = () => {
             setGPA(gradePoint / newGradedCreditUnits)
 
             const cGPA =
-                (CGPA * data?.totalGradedCredits +
-                gradePoint) / (data?.totalGradedCredits + newGradedCreditUnits)
+                (CGPA * data?.totalGradedCredits + gradePoint) /
+                (data?.totalGradedCredits + newGradedCreditUnits)
 
             setCGPA(cGPA)
         }

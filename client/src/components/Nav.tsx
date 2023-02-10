@@ -20,7 +20,7 @@ interface NavProps {
     type: UserRole
 }
 
-interface NavItem {
+export interface NavItem {
     name: string
     icon: JSX.Element
     link: string
@@ -144,6 +144,7 @@ const Nav = (props: NavProps) => {
                     text="Logout"
                     icon={<Logout size={28} color="#ef5c6e" />}
                     onClick={logoutUser}
+                    selected={false}
                 />
             </Navbar.Section>
         </Navbar>
