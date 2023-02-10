@@ -29,12 +29,18 @@ const NavButton = (props: NavButtonProps) => {
                 borderRadius: theme.radius.lg,
                 backgroundColor: props.selected
                     ? theme.colors.brand[0]
+                    : props.selected === undefined
+                    ? theme.colors.brand[0]
                     : "transparent",
                 "&:hover": {
-                    backgroundColor: theme.colors.brand[0],
+                    backgroundColor:
+                        props.selected === undefined
+                            ? theme.colors.brand[1]
+                            : theme.colors.brand[0],
                 },
                 "&:active": {
-                    backgroundColor: "#ffccd6",
+                    backgroundColor:
+                        props.selected === undefined ?  "#fb9db0" : "#ffccd6",
                 },
             })}>
             <Flex w="100%" p="sm" align="center" gap="md">

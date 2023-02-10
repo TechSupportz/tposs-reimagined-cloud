@@ -12,3 +12,4 @@ export const createNavBarSlice: StateCreator<NavbarSlice> = set => ({
         // console.log("toggled navbar")
     },
 })
+
