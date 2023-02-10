@@ -17,6 +17,7 @@ const StudentInfoCard = (props: {
     type: "wide" | "square"
     username?: string
     isDataLoading?: boolean
+    displaySemester?: boolean
 }) => {
     const user = useAppStore(state => state.userInfo)
     const tokens = useAppStore(state => state.tokens)
@@ -69,7 +70,7 @@ const StudentInfoCard = (props: {
                                 : "Loading"}
                         </Text>
                     </Box>
-                    <Box display={props.type === "wide" ? "" : "none"}>
+                    <Box display={props.type === "wide" || props.displaySemester ? "" : "none"}>
                         <Title weight={800} size={16}>
                             Semester:
                         </Title>

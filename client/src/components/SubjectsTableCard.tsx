@@ -78,9 +78,7 @@ const ResultsTableCard = () => {
                             rowStyle={{ backgroundColor: "hsl(0, 100%, 97%)" }}
                             fetching={isLoading}
                             loaderVariant="dots"
-                            onRowClick={row => {
-                                navigate(`${row.Key}`)
-                            }}
+                            
                             textSelectionDisabled
                             emptyState={
                                 data?.message ===

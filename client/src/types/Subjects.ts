@@ -11,4 +11,5 @@ export interface Subject {
     subject_name: string
     subject_code: string
     credit_units: number
+    graded: boolean
 }
