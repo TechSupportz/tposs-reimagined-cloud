@@ -58,21 +58,27 @@ const App = () => {
                 <Route
                     path="/login"
                     element={
-                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=http://localhost:3000/" />
+                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=https://main.d3cvr0pboc0tkg.amplifyapp.com/" />
                     }
                 />
                 <Route
                     path="/logout"
                     element={
-                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout?client_id=4iermftj0fjo513022qtg0n464&logout_uri=https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F" />
+                        <Redirect url="https://tposs-reimagined.auth.us-east-1.amazoncognito.com/logout?client_id=4iermftj0fjo513022qtg0n464&logout_uri=https://tposs-reimagined.auth.us-east-1.amazoncognito.com/login?client_id=4iermftj0fjo513022qtg0n464&response_type=code&scope=email+openid+phone+profile&redirect_uri=https://main.d3cvr0pboc0tkg.amplifyapp.com/" />
                     }
                 />
                 <Route path="/staff" element={<StaffRoute role={role} />}>
                     <Route path="home" element={<HomeStaff />} />
                     <Route path="leave" element={<LeaveStaff />} />
-                    <Route path="leave/:id/:type" element={<LeaveDetailsStaff />} />
+                    <Route
+                        path="leave/:id/:type"
+                        element={<LeaveDetailsStaff />}
+                    />
                     <Route path="seal" element={<SealStaff />} />
-                    <Route path="seal/:id" element={<SealDetailsStaff isReadOnly />} />
+                    <Route
+                        path="seal/:id"
+                        element={<SealDetailsStaff isReadOnly />}
+                    />
                 </Route>
                 <Route path="/student" element={<StudentRoute role={role} />}>
                     <Route path="home" element={<HomeStudent />} />
